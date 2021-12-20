@@ -18,11 +18,9 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
-	r.Route("/todos/{username}", func(r chi.Router) {
-		r.Get("/", h.GetByUsername)
-		// r.Put("/", h.GetAll)
-	})
+	r.Get("/todos/{username}", h.GetByUsername)
 	r.Post("/todo/{userId}", h.CreateNewTodo)
+	r.Patch("/todo/completed/{todoId}", h.MarkAsComplete)
 
 	err := http.ListenAndServe(":3002", r)
 	if err != nil {

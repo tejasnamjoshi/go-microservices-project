@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -22,4 +24,22 @@ func (users Users) ToJSON(rw http.ResponseWriter) error {
 func (user *User) FromJSON(r io.Reader) error {
 	e := json.NewDecoder(r)
 	return e.Decode(user)
+}
+
+func (user *User) GeneratePassword() error {
+	pwd, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.MinCost)
+	if err != nil {
+		return err
+	}
+
+	user.Password = string(pwd)
+	return nil
+}
+
+func (user *User) ComparePassword(password string) bool {
+	if err := bcrypt.CompareHashAndPassword([]byte(password), []byte(user.Password)); err != nil {
+		return false
+	}
+
+	return true
 }
