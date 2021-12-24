@@ -14,13 +14,13 @@ func (a Auth) DeleteUser(rw http.ResponseWriter, r *http.Request) {
 	username := chi.URLParam(r, "username")
 	res, err := auth_db.GetDb().Exec(deleteUserSchema, username)
 	if err != nil {
-		a.l.Panicln(err)
+		a.l.Println(err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	c, err := res.RowsAffected()
 	if err != nil {
-		a.l.Panicln(err)
+		a.l.Println(err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}

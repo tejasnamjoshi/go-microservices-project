@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	todo_db "go-todo/todo/db"
 	"net/http"
 
@@ -12,7 +11,6 @@ var markAsCompleteSchema = "UPDATE todos SET completed = 1 where id = ?"
 
 func (t Todos) MarkAsComplete(rw http.ResponseWriter, r *http.Request) {
 	todoId := chi.URLParam(r, "todoId")
-	fmt.Println("test", todoId)
 	res, err := todo_db.GetDb().Exec(markAsCompleteSchema, todoId)
 	if err != nil {
 		t.l.Panicln(err)

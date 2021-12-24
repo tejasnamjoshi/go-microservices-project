@@ -1,11 +1,15 @@
 package handlers
 
 import (
-	"fmt"
+	"encoding/json"
 	"go-todo/auth/data"
 	auth_db "go-todo/auth/db"
 	"net/http"
 )
+
+type LoginResp struct {
+	Token string `json:"token"`
+}
 
 var addUserSchema = `INSERT INTO users (username, password) VALUES (:username, :password)`
 var authUserSchema = `SELECT * FROM users WHERE username=?`
@@ -16,7 +20,7 @@ func (a Auth) AddUser(rw http.ResponseWriter, r *http.Request) {
 	user.FromJSON(r.Body)
 	err := user.GeneratePassword()
 	if err != nil {
-		a.l.Panicln(err)
+		a.l.Println(err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("Error while logging in."))
 		return
@@ -24,12 +28,12 @@ func (a Auth) AddUser(rw http.ResponseWriter, r *http.Request) {
 
 	res, err := auth_db.GetDb().NamedExec(addUserSchema, user)
 	if err != nil {
-		a.l.Panicln(err)
+		a.l.Println(err)
 		rw.WriteHeader(http.StatusInternalServerError)
 	}
 	rows, err := res.RowsAffected()
 	if rows == 0 {
-		a.l.Panicln(err)
+		a.l.Println(err)
 		rw.WriteHeader(http.StatusInternalServerError)
 	}
 
@@ -45,7 +49,7 @@ func (a Auth) Login(rw http.ResponseWriter, r *http.Request) {
 	user.FromJSON(r.Body)
 	err := auth_db.GetDb().Select(&validUsers, authUserSchema, user.Username)
 	if err != nil {
-		a.l.Panicln(err)
+		a.l.Println(err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("Error logging in"))
 		return
@@ -68,14 +72,15 @@ func (a Auth) Login(rw http.ResponseWriter, r *http.Request) {
 
 	token, err := validUser.GetJWT()
 	if err != nil {
-		a.l.Panicln(err)
+		a.l.Println(err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("Error logging in"))
 		return
 	}
 
-	rw.WriteHeader(http.StatusOK)
 	rw.Header().Add("Content-Type", "application/json")
-	resp := fmt.Sprintf("Valid user : %s", token)
-	rw.Write([]byte(resp))
+	rw.WriteHeader(http.StatusOK)
+	resp := LoginResp{Token: token}
+	e := json.NewEncoder(rw)
+	e.Encode(resp)
 }

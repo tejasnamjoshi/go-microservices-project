@@ -30,6 +30,7 @@ func main() {
 	r.With(data.IsAuthorized).Get("/users", h.GetUsers)
 	r.With(data.IsAuthorized).Post("/user", h.AddUser)
 	r.With(data.IsAuthorized).Delete("/user/{username}", h.DeleteUser)
+	r.Get("/user/authorized", h.GetUserAuthStatus)
 
 	r.Post("/login", h.Login)
 

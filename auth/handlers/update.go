@@ -2,7 +2,7 @@ package handlers
 
 // user, err := a.GetUserByUsername(username)
 // if err != nil {
-// 	a.l.Panicln(err)
+// 	a.l.Println(err)
 // 	rw.WriteHeader(http.StatusInternalServerError)
 // 	return
 // }
