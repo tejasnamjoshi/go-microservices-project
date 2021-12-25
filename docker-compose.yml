@@ -1,8 +1,7 @@
 # Use root/root as user/password credentials
-version: '3.1'
+version: '3.5'
 
 services:
-
   db:
     image: mysql
     command: --default-authentication-plugin=mysql_native_password
@@ -19,3 +18,38 @@ services:
     ports:
       - 4222:4222
     hostname: nats-server
+  
+  # nats-service:
+  #   build: ./nats
+  #   environment:
+  #     NATS_URI: "nats://nats:4222"
+  #   networks:
+  #     - backend
+  #   depends_on:
+  #     - nats
+
+  # auth-service:
+  #   build: ./auth
+  #   ports:
+  #     - 3001:3001
+  #   expose:
+  #     - 3001:3001
+  #   networks:
+  #     - backend
+  #   depends_on:
+  #     - nats
+  #   environment:
+  #     SECRET_KEY: "ezioauditore"
+  #     SESSION_TIME: "15"
+  #     JWT_AUD: "go-todo.jwtgo"
+  #     JWT_ISS: "jwtgo.io"
+  #     NATS_URI: "nats://nats:4222"
+  #     AUTH_PORT: "3001"
+
+  # todo-service:
+  #   build: ./todo
+  #   ports:
+  #     3002:3002
+  #   environment:
+  #     NATS_URI: "nats://127.0.0.1:4222"
+  #     TODO_PORT: "3002"

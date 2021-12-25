@@ -3,6 +3,7 @@ package data
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -17,13 +18,13 @@ type CustomClaims struct {
 
 func (user *User) GetJWT() (string, error) {
 	var mySigningKey = []byte(os.Getenv("SECRET_KEY"))
-
+	st, _ := strconv.Atoi(os.Getenv("SESSION_TIME"))
 	claims := CustomClaims{
 		user.Id,
 		user.Username,
 		true,
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Minute * 1).Unix(),
+			ExpiresAt: time.Now().Add(time.Minute * time.Duration(st)).Unix(),
 			Issuer:    os.Getenv("JWT_ISS"),
 			Audience:  os.Getenv("JWT_AUD"),
 		},

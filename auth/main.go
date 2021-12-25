@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -16,8 +17,9 @@ import (
 func main() {
 	err := godotenv.Load(".env")
 	if err != nil {
-		log.Fatalf("Error loading .env file")
+		fmt.Println("Cannot load .env")
 	}
+	port := os.Getenv("AUTH_PORT")
 
 	l := log.New(os.Stdout, "go-todo", log.LstdFlags)
 
@@ -33,7 +35,7 @@ func main() {
 	r.Use(middleware.Logger)
 
 	r.With(h.IsAuthorized).Get("/users", h.GetUsers)
-	r.With(h.IsAuthorized).Post("/user", h.AddUser)
+	r.Post("/user", h.AddUser)
 	r.With(h.IsAuthorized).Delete("/user/{username}", h.DeleteUser)
 	r.Get("/user/authorized", h.GetUserAuthStatus)
 
@@ -41,6 +43,7 @@ func main() {
 
 	h.InitNats()
 
+	err = http.ListenAndServe(fmt.Sprintf(":%s", port), r)
 	err = http.ListenAndServe(":3001", r)
 	if err != nil {
 		l.Fatal(err)

@@ -30,11 +30,13 @@ func (a Auth) AddUser(rw http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		a.l.Println(err)
 		rw.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 	rows, err := res.RowsAffected()
 	if rows == 0 {
 		a.l.Println(err)
 		rw.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	rw.WriteHeader(http.StatusOK)
