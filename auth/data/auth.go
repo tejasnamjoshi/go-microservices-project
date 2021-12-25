@@ -10,8 +10,8 @@ import (
 
 type User struct {
 	Id       int64  `db:"id"`
-	Username string `db:"username"`
-	Password string `db:"password"`
+	Username string `db:"username" validate:"required"`
+	Password string `db:"password" validate:"passwd"`
 }
 
 type Users []User

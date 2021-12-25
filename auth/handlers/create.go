@@ -18,11 +18,20 @@ func (a Auth) AddUser(rw http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var user = data.User{}
 	user.FromJSON(r.Body)
-	err := user.GeneratePassword()
+
+	err := a.v.Struct(user)
+	if err != nil {
+		a.l.Error(err)
+		rw.WriteHeader(http.StatusBadRequest)
+		rw.Write([]byte("Error creating user."))
+		return
+	}
+
+	err = user.GeneratePassword()
 	if err != nil {
 		a.l.Error(err)
 		rw.WriteHeader(http.StatusInternalServerError)
-		rw.Write([]byte("Error while logging in."))
+		rw.Write([]byte("Error creating user."))
 		return
 	}
 
@@ -49,7 +58,15 @@ func (a Auth) Login(rw http.ResponseWriter, r *http.Request) {
 	user := data.User{}
 
 	user.FromJSON(r.Body)
-	err := auth_db.GetDb().Select(&validUsers, authUserSchema, user.Username)
+	err := a.v.Struct(user)
+	if err != nil {
+		a.l.Error(err)
+		rw.WriteHeader(http.StatusBadRequest)
+		rw.Write([]byte("Error logging in."))
+		return
+	}
+
+	err = auth_db.GetDb().Select(&validUsers, authUserSchema, user.Username)
 	if err != nil {
 		a.l.Error(err)
 		rw.WriteHeader(http.StatusInternalServerError)

@@ -9,12 +9,19 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 )
 
+var validate *validator.Validate
+
 func main() {
 	l := getLogger()
+	validate = validator.New()
+	validate.RegisterValidation("passwd", func(fl validator.FieldLevel) bool {
+		return len(fl.Field().String()) > 5
+	})
 
 	err := godotenv.Load(".env")
 	if err != nil {
@@ -22,7 +29,7 @@ func main() {
 	}
 	port := os.Getenv("AUTH_PORT")
 
-	h := handlers.NewAuth(l)
+	h := handlers.NewAuth(l, validate)
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
