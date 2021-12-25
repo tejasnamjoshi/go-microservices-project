@@ -1,6 +1,7 @@
 package data
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -60,17 +61,31 @@ func ParseJWT(tokenString string) (*CustomClaims, error) {
 
 func IsAuthorized(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		nc, err := GetNats()
+		if err != nil {
+			fmt.Println(err)
+			rw.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
 		authHeader := r.Header.Get("Authorization")
-		ok, err := GetAuthorizationStatus(authHeader)
+		msg, err := nc.Request("authenticate", []byte(authHeader), time.Minute)
 		if err != nil {
 			fmt.Println(err)
 			rw.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-
-		if ok {
-			next.ServeHTTP(rw, r)
+		var userClaims = &CustomClaims{}
+		err = json.Unmarshal(msg.Data, userClaims)
+		if err != nil {
+			fmt.Println("Cannot authenticate")
+			return
 		}
+		if !userClaims.Authorized {
+			rw.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		next.ServeHTTP(rw, r)
 	})
 }
 

@@ -3,14 +3,40 @@ package data
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
-	"strings"
+	"os"
+	"time"
+
+	"github.com/nats-io/nats.go"
 )
 
 type UserClaims struct {
 	UserId     int64  `json:"userId"`
 	Username   string `json:"username"`
 	Authorized bool   `json:"authorized"`
+}
+
+func getNats() (*nats.Conn, error) {
+	var nc *nats.Conn
+	uri := os.Getenv("NATS_URI")
+	var err error
+
+	for i := 0; i < 5; i++ {
+		nc, err = nats.Connect(uri)
+		if err == nil {
+			break
+		}
+
+		fmt.Println("Waiting before connecting to NATS at:", uri)
+		time.Sleep(1 * time.Second)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("Error establishing connection to NATS: %s", err)
+	}
+	fmt.Println("Connected to NATS at:", nc.ConnectedUrl())
+
+	return nc, nil
 }
 
 func IsAuthorized(next http.Handler) http.Handler {
@@ -21,31 +47,31 @@ func IsAuthorized(next http.Handler) http.Handler {
 			rw.Write([]byte("Unauthorized user access."))
 			return
 		}
-		req, err := http.NewRequest(http.MethodGet, "http://localhost:3001/user/authorized", nil)
+		nc, err := getNats()
 		if err != nil {
 			rw.WriteHeader(http.StatusInternalServerError)
+			rw.Write([]byte("Error connecting to NATS."))
 			return
 		}
 
-		q := req.URL.Query()
-		q.Add("token", strings.Split(authHeader, " ")[1])
-		req.URL.RawQuery = q.Encode()
-		client := http.Client{}
-		resp, err := client.Do(req)
+		msg, err := nc.Request("authenticate", []byte(authHeader), time.Minute)
 		if err != nil {
 			rw.WriteHeader(http.StatusUnauthorized)
+			rw.Write([]byte("Unauthorized user access."))
 			return
 		}
-
-		if resp.StatusCode != http.StatusOK {
+		var userClaims = &UserClaims{}
+		err = json.Unmarshal(msg.Data, userClaims)
+		if err != nil {
 			rw.WriteHeader(http.StatusUnauthorized)
+			rw.Write([]byte("Error parsing token."))
 			return
 		}
-		userClaims := &UserClaims{}
-		defer resp.Body.Close()
-		d := json.NewDecoder(resp.Body)
-		d.Decode(userClaims)
-
+		if !userClaims.Authorized {
+			rw.WriteHeader(http.StatusUnauthorized)
+			rw.Write([]byte("Unauthorized user access."))
+			return
+		}
 		ctx := context.WithValue(r.Context(), "userId", userClaims.UserId)
 		next.ServeHTTP(rw, r.WithContext(ctx))
 	})

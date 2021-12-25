@@ -12,3 +12,10 @@ services:
       - 3306:3306
     environment:
       MYSQL_ROOT_PASSWORD: root
+
+  nats-server:
+    image: nats:2.6.6
+    restart: always
+    ports:
+      - 4222:4222
+    hostname: nats-server
