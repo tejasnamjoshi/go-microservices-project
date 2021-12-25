@@ -4,8 +4,6 @@ import (
 	"go-todo/todo/data"
 	todo_db "go-todo/todo/db"
 	"net/http"
-
-	"github.com/go-chi/chi/v5"
 )
 
 var createNewTodoSchema = `INSERT INTO todos (content) values (:content)`
@@ -13,7 +11,8 @@ var createNewUserTodoSchema = `INSERT INTO users_todos (user_id, todo_id) values
 
 func (t Todos) CreateNewTodo(rw http.ResponseWriter, r *http.Request) {
 	var todo = data.Todo{}
-	userId := chi.URLParam(r, "userId")
+	ctx := r.Context()
+	userId := ctx.Value("userId").(int64)
 	db := todo_db.GetDb()
 
 	defer r.Body.Close()

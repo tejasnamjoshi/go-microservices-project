@@ -1,7 +1,6 @@
 package main
 
 import (
-	"go-todo/todo/data"
 	"go-todo/todo/handlers"
 	"log"
 	"net/http"
@@ -25,8 +24,8 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
-	r.With(data.IsAuthorized).Get("/todos", h.GetByUsername)
-	r.With(data.IsAuthorized).Post("/todo", h.CreateNewTodo)
+	r.With(h.IsAuthorized).Get("/todos", h.GetByUsername)
+	r.With(h.IsAuthorized).Post("/todo", h.CreateNewTodo)
 	r.Patch("/todo/completed/{todoId}", h.MarkAsComplete)
 
 	err = http.ListenAndServe(":3002", r)

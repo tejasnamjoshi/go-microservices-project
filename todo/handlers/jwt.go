@@ -1,4 +1,4 @@
-package data
+package handlers
 
 import (
 	"context"
@@ -17,7 +17,7 @@ type UserClaims struct {
 	Authorized bool   `json:"authorized"`
 }
 
-func getNats() (*nats.Conn, error) {
+func (t Todos) GetNats() (*nats.Conn, error) {
 	var nc *nats.Conn
 	uri := os.Getenv("NATS_URI")
 	var err error
@@ -28,18 +28,18 @@ func getNats() (*nats.Conn, error) {
 			break
 		}
 
-		fmt.Println("Waiting before connecting to NATS at:", uri)
+		t.l.Println("Waiting before connecting to NATS at:", uri)
 		time.Sleep(1 * time.Second)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("Error establishing connection to NATS: %s", err)
 	}
-	fmt.Println("Connected to NATS at:", nc.ConnectedUrl())
+	t.l.Println("Connected to NATS at:", nc.ConnectedUrl())
 
 	return nc, nil
 }
 
-func IsAuthorized(next http.Handler) http.Handler {
+func (t Todos) IsAuthorized(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
@@ -47,7 +47,7 @@ func IsAuthorized(next http.Handler) http.Handler {
 			rw.Write([]byte("Unauthorized user access."))
 			return
 		}
-		nc, err := getNats()
+		nc, err := t.GetNats()
 		if err != nil {
 			rw.WriteHeader(http.StatusInternalServerError)
 			rw.Write([]byte("Error connecting to NATS."))

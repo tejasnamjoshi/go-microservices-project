@@ -48,7 +48,7 @@ func (a Auth) GetUserAuthStatus(rw http.ResponseWriter, r *http.Request) {
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	ok, err := data.GetAuthorizationStatus("Bearer " + token)
+	ok, err := a.GetAuthorizationStatus("Bearer " + token)
 	if err != nil {
 		a.l.Println(err)
 		rw.WriteHeader(http.StatusUnauthorized)
