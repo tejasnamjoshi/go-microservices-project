@@ -14,20 +14,20 @@ func (a Auth) DeleteUser(rw http.ResponseWriter, r *http.Request) {
 	username := chi.URLParam(r, "username")
 	res, err := auth_db.GetDb().Exec(deleteUserSchema, username)
 	if err != nil {
-		a.l.Println(err)
+		a.l.Error(err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	c, err := res.RowsAffected()
 	if err != nil {
-		a.l.Println(err)
+		a.l.Error(err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	if c != 1 {
 		m := fmt.Sprintf("Could not find user with username - %s", username)
-		a.l.Println(m)
+		a.l.Error(m)
 		rw.Write([]byte(m))
 		rw.WriteHeader(http.StatusUnauthorized)
 		return

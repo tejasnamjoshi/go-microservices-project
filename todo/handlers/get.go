@@ -20,7 +20,7 @@ func (t Todos) GetByUsername(rw http.ResponseWriter, r *http.Request) {
 	var db = todo_db.GetDb()
 	err := db.Select(&todoIds, getTodoIdsByUserIdSchema, id)
 	if err != nil {
-		t.l.Panicln(err)
+		t.l.Error(err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -28,7 +28,7 @@ func (t Todos) GetByUsername(rw http.ResponseWriter, r *http.Request) {
 	if len(todoIds) > 0 {
 		query, args, err := sqlx.In(getTodoByIds, todoIds)
 		if err != nil {
-			t.l.Panicln(err)
+			t.l.Error(err)
 			rw.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -36,7 +36,7 @@ func (t Todos) GetByUsername(rw http.ResponseWriter, r *http.Request) {
 		err = db.Select(&todos, query, args...)
 
 		if err != nil {
-			t.l.Panicln(err)
+			t.l.Error(err)
 			rw.WriteHeader(http.StatusInternalServerError)
 			return
 		}

@@ -1,20 +1,20 @@
 package main
 
 import (
-	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/nats-io/nats.go"
+	"go.uber.org/zap"
 )
 
 func main() {
+	l := getLogger()
 	err := godotenv.Load(".env")
 	if err != nil {
-		log.Println("Error loading .env file")
+		l.Error("Error loading .env file")
 	}
 	uri := os.Getenv("NATS_URI")
 	var nc *nats.Conn
@@ -25,24 +25,34 @@ func main() {
 			break
 		}
 
-		fmt.Println("Waiting before connecting to NATS at:", uri)
+		l.Warn("Waiting before connecting to NATS at:", uri)
 		time.Sleep(1 * time.Second)
 	}
 	if err != nil {
-		log.Fatal("Error establishing connection to NATS:", err)
+		l.Fatal("Error establishing connection to NATS:", err)
 	}
-	fmt.Println("Connected to NATS at:", nc.ConnectedUrl())
+	l.Info("Connected to NATS at:", nc.ConnectedUrl())
 
-	fmt.Println("Worker subscribed for processing requests...")
-	fmt.Println("Server listening on port 8181...")
+	l.Info("Worker subscribed for processing requests...")
+	l.Info("Server listening on port 8181...")
 
 	http.HandleFunc("/health", health)
 	if err := http.ListenAndServe(":8181", nil); err != nil {
-		log.Fatal(err)
+		l.Fatal(err)
 	}
 }
 
 func health(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusOK)
 	rw.Write([]byte("Success"))
+}
+
+func getLogger() *zap.SugaredLogger {
+	logger, _ := zap.NewProduction()
+	defer logger.Sync() // flushes buffer, if any
+	sugar := logger.Sugar()
+
+	return sugar
+
+	// l := log.New(os.Stdout, "go-todo", log.LstdFlags)
 }

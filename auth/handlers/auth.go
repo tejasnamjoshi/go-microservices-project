@@ -1,11 +1,13 @@
 package handlers
 
-import "log"
+import (
+	"go.uber.org/zap"
+)
 
 type Auth struct {
-	l *log.Logger
+	l *zap.SugaredLogger
 }
 
-func NewAuth(l *log.Logger) *Auth {
+func NewAuth(l *zap.SugaredLogger) *Auth {
 	return &Auth{l}
 }

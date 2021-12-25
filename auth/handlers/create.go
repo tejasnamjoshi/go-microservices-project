@@ -20,7 +20,7 @@ func (a Auth) AddUser(rw http.ResponseWriter, r *http.Request) {
 	user.FromJSON(r.Body)
 	err := user.GeneratePassword()
 	if err != nil {
-		a.l.Println(err)
+		a.l.Error(err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("Error while logging in."))
 		return
@@ -28,13 +28,13 @@ func (a Auth) AddUser(rw http.ResponseWriter, r *http.Request) {
 
 	res, err := auth_db.GetDb().NamedExec(addUserSchema, user)
 	if err != nil {
-		a.l.Println(err)
+		a.l.Error(err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	rows, err := res.RowsAffected()
 	if rows == 0 {
-		a.l.Println(err)
+		a.l.Error(err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -51,7 +51,7 @@ func (a Auth) Login(rw http.ResponseWriter, r *http.Request) {
 	user.FromJSON(r.Body)
 	err := auth_db.GetDb().Select(&validUsers, authUserSchema, user.Username)
 	if err != nil {
-		a.l.Println(err)
+		a.l.Error(err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("Error logging in"))
 		return
@@ -74,7 +74,7 @@ func (a Auth) Login(rw http.ResponseWriter, r *http.Request) {
 
 	token, err := validUser.GetJWT()
 	if err != nil {
-		a.l.Println(err)
+		a.l.Error(err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("Error logging in"))
 		return

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 
@@ -10,25 +9,19 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	hclog "github.com/hashicorp/go-hclog"
 	"github.com/joho/godotenv"
+	"go.uber.org/zap"
 )
 
 func main() {
+	l := getLogger()
+
 	err := godotenv.Load(".env")
 	if err != nil {
-		fmt.Println("Cannot load .env")
+		l.Error("Cannot load .env")
 	}
 	port := os.Getenv("AUTH_PORT")
 
-	l := log.New(os.Stdout, "go-todo", log.LstdFlags)
-
-	_ = hclog.New(&hclog.LoggerOptions{
-		Name:  "my-app",
-		Level: hclog.LevelFromString("DEBUG"),
-	})
-
-	l.Println("Welcome to the AUTH App")
 	h := handlers.NewAuth(l)
 
 	r := chi.NewRouter()
@@ -48,4 +41,16 @@ func main() {
 	if err != nil {
 		l.Fatal(err)
 	}
+
+	l.Info("Welcome to the AUTH App")
+}
+
+func getLogger() *zap.SugaredLogger {
+	logger, _ := zap.NewProduction()
+	defer logger.Sync() // flushes buffer, if any
+	sugar := logger.Sugar()
+
+	return sugar
+
+	// l := log.New(os.Stdout, "go-todo", log.LstdFlags)
 }

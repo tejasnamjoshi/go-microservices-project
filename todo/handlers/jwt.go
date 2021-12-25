@@ -28,13 +28,13 @@ func (t Todos) GetNats() (*nats.Conn, error) {
 			break
 		}
 
-		t.l.Println("Waiting before connecting to NATS at:", uri)
+		t.l.Warn("Waiting before connecting to NATS at:", uri)
 		time.Sleep(1 * time.Second)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("Error establishing connection to NATS: %s", err)
 	}
-	t.l.Println("Connected to NATS at:", nc.ConnectedUrl())
+	t.l.Info("Connected to NATS at:", nc.ConnectedUrl())
 
 	return nc, nil
 }

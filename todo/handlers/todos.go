@@ -1,11 +1,13 @@
 package handlers
 
-import "log"
+import (
+	"go.uber.org/zap"
+)
 
 type Todos struct {
-	l *log.Logger
+	l *zap.SugaredLogger
 }
 
-func NewTodos(l *log.Logger) *Todos {
+func NewTodos(l *zap.SugaredLogger) *Todos {
 	return &Todos{l}
 }

@@ -18,7 +18,7 @@ func (a Auth) GetUsers(rw http.ResponseWriter, r *http.Request) {
 	users := data.Users{}
 	err := auth_db.GetDb().Select(&users, selectAllSchema)
 	if err != nil {
-		a.l.Println(err)
+		a.l.Error(err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -27,14 +27,14 @@ func (a Auth) GetUsers(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusOK)
 	users.ToJSON(rw)
 
-	a.l.Printf("Users Fetched")
+	a.l.Info("Users Fetched")
 }
 
 func (a Auth) GetUserByUsername(username string) (data.User, error) {
 	var user = data.User{}
 	err := auth_db.GetDb().Get(&user, getByUserNameSchema, username)
 	if err != nil {
-		a.l.Println(err)
+		a.l.Error(err)
 		return user, err
 	}
 
@@ -44,13 +44,13 @@ func (a Auth) GetUserByUsername(username string) (data.User, error) {
 func (a Auth) GetUserAuthStatus(rw http.ResponseWriter, r *http.Request) {
 	token := r.URL.Query().Get("token")
 	if token == "" {
-		a.l.Println("Token not available")
+		a.l.Error("Token not available")
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	ok, err := a.GetAuthorizationStatus("Bearer " + token)
 	if err != nil {
-		a.l.Println(err)
+		a.l.Error(err)
 		rw.WriteHeader(http.StatusUnauthorized)
 		rw.Write([]byte("Unautorized access"))
 		return
@@ -58,7 +58,7 @@ func (a Auth) GetUserAuthStatus(rw http.ResponseWriter, r *http.Request) {
 	if ok {
 		claims, err := data.ParseJWT(token)
 		if err != nil {
-			a.l.Println(err)
+			a.l.Error(err)
 			rw.WriteHeader(http.StatusUnauthorized)
 			rw.Write([]byte("Unautorized access"))
 			return

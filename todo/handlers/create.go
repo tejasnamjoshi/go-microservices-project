@@ -42,6 +42,6 @@ func (t Todos) CreateNewTodo(rw http.ResponseWriter, r *http.Request) {
 }
 
 func HandleError(err error, rw http.ResponseWriter, t Todos) {
-	t.l.Panicln(err)
+	t.l.Error(err)
 	rw.WriteHeader(http.StatusInternalServerError)
 }

@@ -21,14 +21,14 @@ USE `go-todo`;
 CREATE TABLE IF NOT EXISTS `todos` (
   `id` int NOT NULL AUTO_INCREMENT,
   `content` varchar(255) NOT NULL,
-  `completed` bit(1) NOT NULL DEFAULT b'0',
+  `completed` tinyint NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Dumping data for table go-todo.todos: ~0 rows (approximately)
 /*!40000 ALTER TABLE `todos` DISABLE KEYS */;
 INSERT IGNORE INTO `todos` (`id`, `content`, `completed`) VALUES
-	(1, 'This is a new todo created from postman after authorization wiith NATS', b'1');
+	(1, 'This is a new todo created from postman after authorization wiith NATS', 1);
 /*!40000 ALTER TABLE `todos` ENABLE KEYS */;
 
 -- Dumping structure for table go-todo.users

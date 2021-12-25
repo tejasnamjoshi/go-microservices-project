@@ -14,7 +14,7 @@ func (a Auth) InitNats() {
 		a.l.Fatal(err)
 	}
 
-	a.l.Println("Listening for auth", nc.ConnectedUrl())
+	a.l.Info("Listening for auth", nc.ConnectedUrl())
 	nc.Subscribe("authenticate", func(msg *nats.Msg) {
 		authHeader := string(msg.Data)
 		jwtParts := strings.Split(authHeader, " ")
@@ -28,7 +28,7 @@ func (a Auth) InitNats() {
 		if ok {
 			claims, err = data.ParseJWT(jwtParts[1])
 			if err != nil {
-				a.l.Println("Error parsing token")
+				a.l.Error("Error parsing token")
 			}
 		}
 		resp, err := json.Marshal(*claims)
