@@ -41,10 +41,7 @@ export default function Home() {
     }
   }, [token]);
 
-  if (isLoading || token) {
-    console.log("Loading");
-    return <Loader />;
-  }
+  if (isLoading || token) return <Loader />;
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-2">

@@ -26,7 +26,7 @@ const Todo = (props: ITodoProps) => {
           pauseOnHover: true,
           draggable: true,
           progress: undefined,
-          progressStyle: { background: '#0A5ECD' }
+          progressStyle: { background: "#0A5ECD" },
         });
       },
       onError: () => {
@@ -39,7 +39,7 @@ const Todo = (props: ITodoProps) => {
           pauseOnHover: true,
           draggable: true,
           progress: undefined,
-          progressStyle: { background: '#0A5ECD' }
+          progressStyle: { background: "#0A5ECD" },
         });
       },
     }
@@ -50,10 +50,7 @@ const Todo = (props: ITodoProps) => {
   };
 
   return (
-    <div
-      key={props.Id}
-      className="flex justify-between items-center px-4 py-2 border-b-2 last:border-b-0"
-    >
+    <div className="flex justify-between items-center px-4 py-2 border-b-2 last:border-b-0">
       <div className="border-r-2 pr-4 flex-grow text-left">{props.Content}</div>
       <input
         type="checkbox"
