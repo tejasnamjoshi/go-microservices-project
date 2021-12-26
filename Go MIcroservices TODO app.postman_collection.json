@@ -73,7 +73,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"tejas3\",\r\n    \"password\": \"123456\"\r\n}",
+							"raw": "{\r\n    \"username\": \"tejas2\",\r\n    \"password\": \"1234567\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -138,7 +138,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"tejas3\",\r\n    \"password\": \"123456\"\r\n}",
+							"raw": "{\r\n    \"username\": \"tejas\",\r\n    \"password\": \"123456\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -236,7 +236,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"content\": \"This is a new todo created from postman after authorization wiith NATS\"\r\n}",
+							"raw": "{\r\n    \"content\": \"This is a new todo created from postman after authorization wiith NATS and using Docker\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -244,14 +244,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:3002/todo",
+							"raw": "http://localhost:3002/todos",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "3002",
 							"path": [
-								"todo"
+								"todos"
 							]
 						}
 					},
@@ -260,19 +260,28 @@
 				{
 					"name": "Mark as complete",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "PATCH",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3002/todo/completed/3",
+							"raw": "http://localhost:3002/todos/2",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "3002",
 							"path": [
-								"todo",
-								"completed",
-								"3"
+								"todos",
+								"2"
 							]
 						}
 					},
@@ -298,6 +307,22 @@
 							"path": [
 								"health"
 							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Test",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8222",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8222"
 						}
 					},
 					"response": []
