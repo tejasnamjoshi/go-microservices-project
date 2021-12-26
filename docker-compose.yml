@@ -1,5 +1,9 @@
 version: '3.5'
 
+networks:
+  backend:
+    driver: bridge
+
 services:
   db:
     image: mysql
@@ -9,46 +13,75 @@ services:
     ports:
       - 3306:3306
     environment:
-      MYSQL_ROOT_PASSWORD: ${ROOT_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    container_name: mysql
+    networks:
+      - backend
 
-  nats-server:
+  nats:
     image: nats:2.6.6
-    restart: always
     ports:
       - 4222:4222
-    hostname: nats-server
+      - 6222:6222
+      - 8222:8222
+    networks:
+      - backend
+    container_name: nats
   
-  # nats-service:
-  #   build: ./nats
-  #   environment:
-  #     NATS_URI: "nats://nats:4222"
-  #   networks:
-  #     - backend
-  #   depends_on:
-  #     - nats
+  nats-service:
+    build:
+      context: ./
+      dockerfile: nats/Dockerfile
+    ports:
+      - 8181:8181
+    environment:
+      NATS_URI: "nats://nats:4222"
+    container_name: nats-service
+    networks:
+      - backend
+    depends_on:
+      - nats
 
-  # auth-service:
-  #   build: ./auth
-  #   ports:
-  #     - 3001:3001
-  #   expose:
-  #     - 3001:3001
-  #   networks:
-  #     - backend
-  #   depends_on:
-  #     - nats
-  #   environment:
-  #     SECRET_KEY: "ezioauditore"
-  #     SESSION_TIME: "15"
-  #     JWT_AUD: "go-todo.jwtgo"
-  #     JWT_ISS: "jwtgo.io"
-  #     NATS_URI: "nats://nats:4222"
-  #     AUTH_PORT: "3001"
+  auth-service:
+    build: 
+      context: ./
+      dockerfile: auth/Dockerfile
+    ports:
+      - 3001:3001
+    container_name: auth-service
+    networks:
+      - backend
+    depends_on:
+      - nats
+    environment:
+      SECRET_KEY: "ezioauditore"
+      SESSION_TIME: "15"
+      JWT_AUD: "go-todo.jwtgo"
+      JWT_ISS: "jwtgo.io"
+      NATS_URI: "nats://nats:4222"
+      AUTH_PORT: "3001"
+      MYSQL_HOST: "mysql:3306"
+      MYSQL_ROOT_USERNAME: "root"
+      MYSQL_ROOT_PASSWORD: "root"
 
-  # todo-service:
-  #   build: ./todo
-  #   ports:
-  #     3002:3002
-  #   environment:
-  #     NATS_URI: "nats://127.0.0.1:4222"
-  #     TODO_PORT: "3002"
+  todo-service:
+    build: 
+      context: ./
+      dockerfile: todo/Dockerfile
+    ports:
+      - 3002:3002
+    container_name: todo-service
+    networks:
+      - backend
+    depends_on:
+      - nats
+    environment:
+      SECRET_KEY: "ezioauditore"
+      SESSION_TIME: "15"
+      JWT_AUD: "go-todo.jwtgo"
+      JWT_ISS: "jwtgo.io"
+      NATS_URI: "nats://nats:4222"
+      TODO_PORT: "3002"
+      MYSQL_HOST: "mysql:3306"
+      MYSQL_ROOT_USERNAME: "root"
+      MYSQL_ROOT_PASSWORD: "root"

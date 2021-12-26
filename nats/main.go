@@ -20,7 +20,7 @@ func main() {
 	var nc *nats.Conn
 
 	for i := 0; i < 5; i++ {
-		nc, err = nats.Connect(nats.DefaultURL)
+		nc, err = nats.Connect(uri)
 		if err == nil {
 			break
 		}
