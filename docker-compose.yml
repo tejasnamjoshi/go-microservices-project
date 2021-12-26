@@ -28,9 +28,9 @@ services:
   nats:
     image: nats:2.6.6
     ports:
-      - 4222:4222
-      - 6222:6222
-      - 8222:8222
+      - ${NATS_CLIENT}:4222
+      - ${NATS_CLLUSTER}:6222
+      - ${NATS_HTTP}:8222
     networks:
       - backend
     container_name: nats
@@ -40,7 +40,7 @@ services:
       context: ./
       dockerfile: nats/Dockerfile
     ports:
-      - 8181:8181
+      - ${NATS_PORT}:${NATS_PORT}
     environment:
       NATS_URI: "nats://nats:4222"
     container_name: nats-service
@@ -64,15 +64,15 @@ services:
       - nats
       - mysql
     environment:
-      SECRET_KEY: "ezioauditore"
-      SESSION_TIME: "15"
-      JWT_AUD: "go-todo.jwtgo"
-      JWT_ISS: "jwtgo.io"
+      SECRET_KEY: ${SECRET_KEY}
+      SESSION_TIME: ${SESSION_TIME}
+      JWT_AUD: ${JWT_AUD}
+      JWT_ISS: ${JWT_ISS}
       NATS_URI: "nats://nats:4222"
-      AUTH_PORT: "3001"
       MYSQL_HOST: "mysql:3306"
-      MYSQL_ROOT_USERNAME: "root"
-      MYSQL_ROOT_PASSWORD: "root"
+      MYSQL_ROOT_USERNAME: ${MYSQL_ROOT_USERNAME}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      AUTH_PORT: ${AUTH_PORT}
 
   todo-service:
     build: 
@@ -88,22 +88,22 @@ services:
       - nats
       - mysql
     environment:
-      SECRET_KEY: "ezioauditore"
-      SESSION_TIME: "15"
-      JWT_AUD: "go-todo.jwtgo"
-      JWT_ISS: "jwtgo.io"
+      SECRET_KEY: ${SECRET_KEY}
+      SESSION_TIME: ${SESSION_TIME}
+      JWT_AUD: ${JWT_AUD}
+      JWT_ISS: ${JWT_ISS}
       NATS_URI: "nats://nats:4222"
-      TODO_PORT: "3002"
       MYSQL_HOST: "mysql:3306"
-      MYSQL_ROOT_USERNAME: "root"
-      MYSQL_ROOT_PASSWORD: "root"
+      MYSQL_ROOT_USERNAME: ${MYSQL_ROOT_USERNAME}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      TODO_PORT: ${TODO_PORT}
       
   next-todo:
     build:
       context: ./
       dockerfile: next-todo-tailwind/Dockerfile
     ports:
-      - 3000:3000
+      - ${NEXT_PORT}:${NEXT_PORT}
     container_name: next-todo
     volumes:
       - ./next-todo-tailwind:/usr/src/app
