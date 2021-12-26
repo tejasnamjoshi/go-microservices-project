@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/go-chi/chi/v5 v5.0.7 // indirect
+	github.com/go-chi/cors v1.2.0
 	github.com/go-playground/validator/v10 v10.9.0 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect

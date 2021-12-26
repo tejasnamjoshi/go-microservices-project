@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 )
@@ -24,10 +25,15 @@ func main() {
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins: []string{"http://localhost*"},
+		AllowedMethods: []string{"GET", "POST", "PATCH"},
+		AllowedHeaders: []string{"Accept", "Authorization", "Content-Type"},
+	}))
 
 	r.With(h.IsAuthorized).Get("/todos", h.GetByUsername)
-	r.With(h.IsAuthorized).Post("/todo", h.CreateNewTodo)
-	r.With(h.IsAuthorized).Patch("/todo/completed/{todoId}", h.MarkAsComplete)
+	r.With(h.IsAuthorized).Post("/todos", h.CreateNewTodo)
+	r.With(h.IsAuthorized).Patch("/todos/{todoId}", h.MarkAsComplete)
 
 	err = http.ListenAndServe(fmt.Sprintf(":%s", port), r)
 	if err != nil {

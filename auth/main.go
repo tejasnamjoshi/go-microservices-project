@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
@@ -33,6 +34,11 @@ func main() {
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins: []string{"http://localhost*"},
+		AllowedMethods: []string{"GET", "POST", "PATCH"},
+		AllowedHeaders: []string{"Accept", "Authorization", "Content-Type"},
+	}))
 
 	r.With(h.IsAuthorized).Get("/users", h.GetUsers)
 	r.Post("/user", h.AddUser)

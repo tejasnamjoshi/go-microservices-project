@@ -11,7 +11,7 @@ import (
 var db_client *sqlx.DB
 
 func initDB() {
-	uri := fmt.Sprintf("root:%s@tcp(localhost:3306)/go-todo", os.Getenv("ROOT_PASSWORD"))
+	uri := fmt.Sprintf("%s:%s@tcp(%s)/go-todo", os.Getenv("MYSQL_ROOT_USERNAME"), os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_HOST"))
 	db, err := sqlx.Connect("mysql", uri)
 	if err != nil {
 		panic(err)
