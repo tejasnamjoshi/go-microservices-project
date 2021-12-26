@@ -1,7 +1,11 @@
 version: '3.5'
 
 networks:
+  mysql:
+    driver: bridge
   backend:
+    driver: bridge
+  frontend:
     driver: bridge
 
 services:
@@ -16,9 +20,9 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     container_name: mysql
     volumes:
-      - ${DATA_DIR}:/var/lib/mysql
+      - ${DATA_DIR}/mysql:/var/lib/mysql
     networks:
-      - backend
+      - mysql
 
   nats:
     image: nats:2.6.6
@@ -41,6 +45,7 @@ services:
     container_name: nats-service
     networks:
       - backend
+      - mysql
     depends_on:
       - nats
 
@@ -53,6 +58,7 @@ services:
     container_name: auth-service
     networks:
       - backend
+      - mysql
     depends_on:
       - nats
     environment:
@@ -75,6 +81,7 @@ services:
     container_name: todo-service
     networks:
       - backend
+      - mysql
     depends_on:
       - nats
     environment:
@@ -87,3 +94,18 @@ services:
       MYSQL_HOST: "mysql:3306"
       MYSQL_ROOT_USERNAME: "root"
       MYSQL_ROOT_PASSWORD: "root"
+      
+  next-todo:
+    build:
+      context: ./
+      dockerfile: next-todo-tailwind/Dockerfile
+    ports:
+      - 3000:3000
+    container_name: next-todo
+    volumes:
+      - ./next-todo-tailwind:/usr/src/app
+      - /usr/src/app/node_modules
+      - /usr/src/app/.next
+    networks:
+      - frontend
+    

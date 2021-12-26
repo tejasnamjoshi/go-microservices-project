@@ -39,7 +39,7 @@ export default function Home() {
       localStorage.setItem("token", token);
       router.push("/todos");
     }
-  }, [token]);
+  }, [router, token]);
 
   if (isLoading || token) return <Loader />;
 

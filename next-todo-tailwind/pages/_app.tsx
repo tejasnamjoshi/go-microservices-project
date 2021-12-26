@@ -24,8 +24,6 @@ function MyApp({ Component, pageProps }) {
         draggable
         pauseOnHover
       />
-      {/* Same as */}
-      <ToastContainer />
     </AxiosProvider>
   );
 }
