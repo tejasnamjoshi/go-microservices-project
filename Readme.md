@@ -33,3 +33,12 @@ MYSQL and NATS are both setup in a docker environment.
    - Environment file
    - Collection file.
  - Open Postman and import these files.
+
+## Libraries and Frameworks used
+ - go-chi for routing
+ - Validator for validations
+ - NATS for inter-service communication
+ - jwt-go for JWT based authentication.
+ - SQLX for DB interaction (mysql)
+ - NextJS for the Frontend
+ - Docker for containerizing all services ( BE + FE )
