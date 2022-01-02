@@ -51,7 +51,7 @@ func ParseJWT(tokenString string) (*CustomClaims, error) {
 
 	claims, ok := token.Claims.(*CustomClaims)
 	if !ok || !token.Valid {
-		return claims, fmt.Errorf("Error decoding token")
+		return claims, fmt.Errorf("error decoding token")
 	}
 	return claims, nil
 }

@@ -37,7 +37,7 @@ func (user *User) GeneratePassword() error {
 }
 
 func (user *User) ComparePassword(password string) bool {
-	if err := bcrypt.CompareHashAndPassword([]byte(password), []byte(user.Password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
 		return false
 	}
 

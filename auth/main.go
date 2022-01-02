@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	auth_db "go-todo/auth/db"
 	"go-todo/auth/handlers"
 
 	"github.com/go-chi/chi/v5"
@@ -54,6 +55,10 @@ func main() {
 	if err != nil {
 		l.Fatal(err)
 	}
+
+	// init the DB
+	db := auth_db.GetDb()
+	defer db.Close()
 
 	l.Info("Welcome to the AUTH App")
 }

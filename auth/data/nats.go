@@ -23,7 +23,7 @@ func GetNats() (*nats.Conn, error) {
 		time.Sleep(1 * time.Second)
 	}
 	if err != nil {
-		return nil, fmt.Errorf("Error establishing connection to NATS: %s", err)
+		return nil, fmt.Errorf("error establishing connection to NATS: %s", err)
 	}
 	fmt.Println("Connected to NATS at:", nc.ConnectedUrl())
 
