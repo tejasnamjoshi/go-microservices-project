@@ -63,7 +63,7 @@ func (*userServiceStruct) Login(user *entities.User) (string, error) {
 		return "", err
 	}
 
-	token, err := jwtService.GetJWT(user)
+	token, err := jwtService.GetJWT(dbUser)
 	if err != nil {
 		// logger.Error(err)
 		return "", err

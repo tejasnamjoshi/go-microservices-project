@@ -25,7 +25,6 @@ func NewMysqlRepository(d *sqlx.DB) UserRepository {
 }
 
 func (r *repo) Create(user *entities.User) (int64, error) {
-	// db := auth_db.GetDb()
 	res, err := db.NamedExec(addUserSchema, user)
 	if err != nil {
 		// logger.Error(err)
@@ -41,7 +40,6 @@ func (r *repo) Create(user *entities.User) (int64, error) {
 }
 
 func (r *repo) Delete(username string) error {
-	// db := auth_db.GetDb()
 	res, err := db.Exec(deleteUserSchema, username)
 	if err != nil {
 		// logger.Error(err)
@@ -63,7 +61,6 @@ func (r *repo) Delete(username string) error {
 }
 
 func (r *repo) Authenticate(user *entities.User) (*entities.User, error) {
-	// db := auth_db.GetDb()
 	row := db.QueryRow(authUserSchema, user.Username)
 	if row.Err() != nil {
 		// logger.Error(row.Err().Error())
@@ -83,7 +80,6 @@ func (r *repo) Authenticate(user *entities.User) (*entities.User, error) {
 }
 
 func (r *repo) GetAll() (*entities.Users, error) {
-	// db := auth_db.GetDb()
 	users := entities.Users{}
 	err := db.Select(&users, selectAllSchema)
 

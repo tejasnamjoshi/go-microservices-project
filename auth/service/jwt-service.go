@@ -50,10 +50,10 @@ func (*JWTServiceStruct) GetJWT(user *entities.User) (string, error) {
 	var mySigningKey = []byte(os.Getenv("SECRET_KEY"))
 	st, _ := strconv.Atoi(os.Getenv("SESSION_TIME"))
 	claims := CustomClaims{
-		user.Id,
-		user.Username,
-		true,
-		jwt.StandardClaims{
+		UserId:     user.Id,
+		Username:   user.Username,
+		Authorized: true,
+		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Minute * time.Duration(st)).Unix(),
 			Issuer:    os.Getenv("JWT_ISS"),
 			Audience:  os.Getenv("JWT_AUD"),
