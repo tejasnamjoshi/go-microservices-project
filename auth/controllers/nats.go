@@ -1,4 +1,4 @@
-package handlers
+package controllers
 
 import (
 	"encoding/json"
@@ -23,19 +23,12 @@ func (a Auth) InitNats() {
 			return
 		}
 
-		var claims = &data.CustomClaims{}
-		ok, err := a.GetAuthorizationStatus(authHeader)
+		claims, err := jwtService.GetAuthorizationData(jwtParts[1])
 		if err != nil {
 			a.l.Error("Error getting authorization status")
 			return
 		}
-		if ok {
-			claims, err = data.ParseJWT(jwtParts[1])
-			if err != nil {
-				a.l.Error("Error parsing token")
-			}
-		}
-		resp, err := json.Marshal(*claims)
+		resp, err := json.Marshal(claims)
 		if err != nil {
 			a.l.Error("Error sending the data")
 			return

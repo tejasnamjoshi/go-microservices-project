@@ -1,10 +1,8 @@
-package handlers
+package controllers
 
 import (
 	"encoding/json"
-	"go-todo/auth/data"
-	auth_db "go-todo/auth/db"
-	"go-todo/auth/repository"
+	"go-todo/auth/entities"
 	"go-todo/auth/utils"
 	"net/http"
 )
@@ -14,53 +12,46 @@ type LoginResp struct {
 }
 
 func (a Auth) AddUser(rw http.ResponseWriter, r *http.Request) {
+	// Manipulate Input
 	defer r.Body.Close()
-	var user = data.User{}
+	var user = entities.User{}
 	user.FromJSON(r.Body)
-	err := user.GeneratePassword()
-	if err != nil {
-		utils.CreateHttpError(rw, http.StatusInternalServerError, "Error creating user.")
-		return
-	}
 
-	err = a.v.Struct(user)
+	// Validate Input
+	err := userService.Validate(&user)
 	if err != nil {
 		a.l.Error(err)
-		utils.CreateHttpError(rw, http.StatusBadRequest, "Error creating user.")
+		utils.CreateHttpError(rw, http.StatusBadRequest, err.Error())
 		return
 	}
-	db := auth_db.GetDb()
 
-	_, err = repository.StoreUser(db, user, a.l)
-	if err != nil {
-		utils.CreateHttpError(rw, http.StatusInternalServerError, "Error creating user.")
-		return
-	}
+	// Invoke Logic
+	err = userService.Create(&user)
 	if err != nil {
 		utils.CreateHttpError(rw, http.StatusInternalServerError, "Error creating user.")
 		return
 	}
 
+	// Send Response
 	rw.WriteHeader(http.StatusOK)
 	rw.Write([]byte("New User created successfully"))
 }
 
 func (a Auth) Login(rw http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	user := data.User{}
+	user := entities.User{}
 
 	user.FromJSON(r.Body)
-	err := a.v.Struct(user)
+	err := userService.Validate(&user)
 	if err != nil {
 		a.l.Error(err)
-		utils.CreateHttpError(rw, http.StatusBadRequest, "Error logging in.")
+		utils.CreateHttpError(rw, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	db := auth_db.GetDb()
-
-	token, err := repository.AuthenticateUser(db, user, a.l)
+	token, err := userService.Login(&user)
 	if err != nil {
+		a.l.Error(err)
 		utils.CreateHttpError(rw, http.StatusUnauthorized, "Error logging in.")
 		return
 	}

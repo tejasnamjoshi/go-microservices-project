@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"os"
 
+	"go-todo/auth/controllers"
 	auth_db "go-todo/auth/db"
-	"go-todo/auth/handlers"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -31,7 +31,7 @@ func main() {
 	}
 	port := os.Getenv("AUTH_PORT")
 
-	h := handlers.NewAuth(l, validate)
+	h := controllers.NewAuthController(l, validate)
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
@@ -44,7 +44,7 @@ func main() {
 	r.With(h.IsAuthorized).Get("/users", h.GetUsers)
 	r.Post("/user", h.AddUser)
 	r.With(h.IsAuthorized).Delete("/user/{username}", h.DeleteUser)
-	r.Get("/user/authorized", h.GetUserAuthStatus)
+	r.Get("/user/authorized", h.DecodeToken)
 
 	r.Post("/login", h.Login)
 

@@ -1,8 +1,6 @@
-package handlers
+package controllers
 
 import (
-	auth_db "go-todo/auth/db"
-	"go-todo/auth/repository"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -10,8 +8,13 @@ import (
 
 func (a Auth) DeleteUser(rw http.ResponseWriter, r *http.Request) {
 	username := chi.URLParam(r, "username")
-	db := auth_db.GetDb()
-	err := repository.DeleteUser(db, username, a.l)
+	if username == "" {
+		rw.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// userService := service.NewUserService()
+	err := userService.Delete(username)
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
