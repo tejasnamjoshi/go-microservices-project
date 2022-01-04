@@ -20,7 +20,7 @@ func NewMysqlRepository() UserRepository {
 	return &repo{}
 }
 
-func (*repo) Create(user *entities.User) (int64, error) {
+func (r *repo) Create(user *entities.User) (int64, error) {
 	db := auth_db.GetDb()
 	res, err := db.NamedExec(addUserSchema, user)
 	if err != nil {
@@ -36,7 +36,7 @@ func (*repo) Create(user *entities.User) (int64, error) {
 	return id, nil
 }
 
-func (*repo) Delete(username string) error {
+func (r *repo) Delete(username string) error {
 	db := auth_db.GetDb()
 	res, err := db.Exec(deleteUserSchema, username)
 	if err != nil {
@@ -58,8 +58,7 @@ func (*repo) Delete(username string) error {
 	return nil
 }
 
-func (*repo) Authenticate(user *entities.User) (*entities.User, error) {
-
+func (r *repo) Authenticate(user *entities.User) (*entities.User, error) {
 	db := auth_db.GetDb()
 	row := db.QueryRow(authUserSchema, user.Username)
 	if row.Err() != nil {
@@ -79,9 +78,10 @@ func (*repo) Authenticate(user *entities.User) (*entities.User, error) {
 	return &dbUser, nil
 }
 
-func (*repo) GetAll() (*entities.Users, error) {
+func (r *repo) GetAll() (*entities.Users, error) {
+	db := auth_db.GetDb()
 	users := entities.Users{}
-	err := auth_db.GetDb().Select(&users, selectAllSchema)
+	err := db.Select(&users, selectAllSchema)
 
 	return &users, err
 }

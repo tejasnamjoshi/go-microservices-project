@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-todo/auth/data"
+	"go-todo/auth/service"
 	"net/http"
 	"time"
 )
@@ -24,7 +25,7 @@ func (a Auth) IsAuthorized(next http.Handler) http.Handler {
 			rw.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-		var userClaims = &data.CustomClaims{}
+		var userClaims = &service.CustomClaims{}
 		err = json.Unmarshal(msg.Data, userClaims)
 		if err != nil {
 			fmt.Println("Cannot authenticate")

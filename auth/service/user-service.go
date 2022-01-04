@@ -8,6 +8,10 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+var (
+	userRepository repository.UserRepository
+)
+
 type UserService interface {
 	Validate(user *entities.User) error
 	Create(user *entities.User) error
@@ -18,7 +22,8 @@ type UserService interface {
 
 type userServiceStruct struct{}
 
-func NewUserService() UserService {
+func NewUserService(r repository.UserRepository) UserService {
+	userRepository = r
 	return &userServiceStruct{}
 }
 
@@ -31,7 +36,6 @@ func (*userServiceStruct) Validate(user *entities.User) error {
 }
 
 func (*userServiceStruct) Create(user *entities.User) error {
-	userRepository := repository.NewMysqlRepository()
 	jwtService := NewJWTService()
 	err := jwtService.GeneratePassword(user)
 	if err != nil {
@@ -46,7 +50,6 @@ func (*userServiceStruct) Create(user *entities.User) error {
 }
 
 func (*userServiceStruct) Login(user *entities.User) (string, error) {
-	userRepository := repository.NewMysqlRepository()
 	dbUser, err := userRepository.Authenticate(user)
 	if err != nil {
 		return "", err
@@ -70,12 +73,10 @@ func (*userServiceStruct) Login(user *entities.User) (string, error) {
 }
 
 func (*userServiceStruct) Delete(username string) error {
-	userRepository := repository.NewMysqlRepository()
 	return userRepository.Delete(username)
 }
 
 func (*userServiceStruct) GetAll() (*entities.Users, error) {
-	userRepository := repository.NewMysqlRepository()
 	users, err := userRepository.GetAll()
 
 	return users, err

@@ -18,15 +18,15 @@ func (a Auth) AddUser(rw http.ResponseWriter, r *http.Request) {
 	user.FromJSON(r.Body)
 
 	// Validate Input
-	err := userService.Validate(&user)
+	err := a.UserService.Validate(&user)
 	if err != nil {
-		a.l.Error(err)
+		a.Logger.Error(err)
 		utils.CreateHttpError(rw, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	// Invoke Logic
-	err = userService.Create(&user)
+	err = a.UserService.Create(&user)
 	if err != nil {
 		utils.CreateHttpError(rw, http.StatusInternalServerError, "Error creating user.")
 		return
@@ -42,16 +42,16 @@ func (a Auth) Login(rw http.ResponseWriter, r *http.Request) {
 	user := entities.User{}
 
 	user.FromJSON(r.Body)
-	err := userService.Validate(&user)
+	err := a.UserService.Validate(&user)
 	if err != nil {
-		a.l.Error(err)
+		a.Logger.Error(err)
 		utils.CreateHttpError(rw, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	token, err := userService.Login(&user)
+	token, err := a.UserService.Login(&user)
 	if err != nil {
-		a.l.Error(err)
+		a.Logger.Error(err)
 		utils.CreateHttpError(rw, http.StatusUnauthorized, "Error logging in.")
 		return
 	}

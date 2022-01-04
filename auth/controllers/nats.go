@@ -11,10 +11,10 @@ import (
 func (a Auth) InitNats() {
 	nc, err := data.GetNats()
 	if err != nil {
-		a.l.Fatal(err)
+		a.Logger.Fatal(err)
 	}
 
-	a.l.Info("Listening for auth", nc.ConnectedUrl())
+	a.Logger.Info("Listening for auth", nc.ConnectedUrl())
 	nc.Subscribe("authenticate", func(msg *nats.Msg) {
 		authHeader := string(msg.Data)
 		jwtParts := strings.Split(authHeader, " ")
@@ -23,14 +23,14 @@ func (a Auth) InitNats() {
 			return
 		}
 
-		claims, err := jwtService.GetAuthorizationData(jwtParts[1])
+		claims, err := a.JwtService.GetAuthorizationData(jwtParts[1])
 		if err != nil {
-			a.l.Error("Error getting authorization status")
+			a.Logger.Error("Error getting authorization status")
 			return
 		}
 		resp, err := json.Marshal(claims)
 		if err != nil {
-			a.l.Error("Error sending the data")
+			a.Logger.Error("Error sending the data")
 			return
 		}
 		nc.Publish(msg.Reply, []byte(resp))

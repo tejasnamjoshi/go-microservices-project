@@ -10,9 +10,9 @@ type AuthRequest struct {
 }
 
 func (a Auth) GetUsers(rw http.ResponseWriter, r *http.Request) {
-	users, err := userService.GetAll()
+	users, err := a.UserService.GetAll()
 	if err != nil {
-		a.l.Error(err)
+		a.Logger.Error(err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -21,19 +21,19 @@ func (a Auth) GetUsers(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusOK)
 	users.ToJSON(rw)
 
-	a.l.Info("Users Fetched")
+	a.Logger.Info("Users Fetched")
 }
 
 func (a Auth) DecodeToken(rw http.ResponseWriter, r *http.Request) {
 	token := r.URL.Query().Get("token")
 	if token == "" {
-		a.l.Error("Token not available")
+		a.Logger.Error("Token not available")
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	claims, err := jwtService.GetAuthorizationData(token)
+	claims, err := a.JwtService.GetAuthorizationData(token)
 	if err != nil {
-		a.l.Error(err)
+		a.Logger.Error(err)
 		rw.WriteHeader(http.StatusUnauthorized)
 		rw.Write([]byte("Unautorized access"))
 		return

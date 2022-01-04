@@ -7,16 +7,17 @@ import (
 	"go.uber.org/zap"
 )
 
-type Auth struct {
-	l *zap.SugaredLogger
-	v *validator.Validate
+type App struct {
+	Validator   *validator.Validate
+	Logger      *zap.SugaredLogger
+	JwtService  service.JWTService
+	UserService service.UserService
 }
 
-var (
-	userService service.UserService = service.NewUserService()
-	jwtService  service.JWTService  = service.NewJWTService()
-)
+type Auth struct {
+	App
+}
 
-func NewAuthController(l *zap.SugaredLogger, v *validator.Validate) *Auth {
-	return &Auth{l, v}
+func NewAuthController(a App) *Auth {
+	return &Auth{a}
 }

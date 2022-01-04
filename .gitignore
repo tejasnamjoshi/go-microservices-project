@@ -1,2 +1,3 @@
 build
 .go-microservices-docker
+.env

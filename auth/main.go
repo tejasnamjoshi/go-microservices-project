@@ -1,14 +1,13 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
 	"os"
 
 	"go-todo/auth/controllers"
-	auth_db "go-todo/auth/db"
+	"go-todo/auth/repository"
+	"go-todo/auth/router"
+	"go-todo/auth/service"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-playground/validator/v10"
@@ -16,12 +15,17 @@ import (
 	"go.uber.org/zap"
 )
 
-var validate *validator.Validate
+var (
+	Validate       *validator.Validate       = validator.New()
+	httpRouter     router.Router             = router.NewChiRouter()
+	userRepository repository.UserRepository = repository.NewMysqlRepository()
+	userService    service.UserService       = service.NewUserService(userRepository)
+	jwtService     service.JWTService        = service.NewJWTService()
+)
 
 func main() {
 	l := getLogger()
-	validate = validator.New()
-	validate.RegisterValidation("passwd", func(fl validator.FieldLevel) bool {
+	Validate.RegisterValidation("passwd", func(fl validator.FieldLevel) bool {
 		return len(fl.Field().String()) > 5
 	})
 
@@ -31,34 +35,29 @@ func main() {
 	}
 	port := os.Getenv("AUTH_PORT")
 
-	h := controllers.NewAuthController(l, validate)
+	c := controllers.NewAuthController(controllers.App{
+		Validator:   Validate,
+		Logger:      getLogger(),
+		UserService: userService,
+		JwtService:  jwtService,
+	})
 
-	r := chi.NewRouter()
-	r.Use(middleware.Logger)
-	r.Use(cors.Handler(cors.Options{
+	httpRouter.USE(middleware.Logger)
+	httpRouter.USE(cors.Handler(cors.Options{
 		AllowedOrigins: []string{"http://localhost*"},
 		AllowedMethods: []string{"GET", "POST", "PATCH"},
 		AllowedHeaders: []string{"Accept", "Authorization", "Content-Type"},
 	}))
 
-	r.With(h.IsAuthorized).Get("/users", h.GetUsers)
-	r.Post("/user", h.AddUser)
-	r.With(h.IsAuthorized).Delete("/user/{username}", h.DeleteUser)
-	r.Get("/user/authorized", h.DecodeToken)
+	c.InitNats()
+	httpRouter.POST("/user", c.AddUser)
+	httpRouter.GET("/user/authorized", c.DecodeToken)
+	httpRouter.GET("/login", c.Login)
 
-	r.Post("/login", h.Login)
+	httpRouter.WITH(c.IsAuthorized).GET("/users", c.GetUsers)
+	httpRouter.WITH(c.IsAuthorized).DELETE("/user/{username}", c.DeleteUser)
 
-	h.InitNats()
-
-	err = http.ListenAndServe(fmt.Sprintf(":%s", port), r)
-	err = http.ListenAndServe(":3001", r)
-	if err != nil {
-		l.Fatal(err)
-	}
-
-	// init the DB
-	db := auth_db.GetDb()
-	defer db.Close()
+	httpRouter.SERVE(port)
 
 	l.Info("Welcome to the AUTH App")
 }
@@ -69,6 +68,4 @@ func getLogger() *zap.SugaredLogger {
 	sugar := logger.Sugar()
 
 	return sugar
-
-	// l := log.New(os.Stdout, "go-todo", log.LstdFlags)
 }
