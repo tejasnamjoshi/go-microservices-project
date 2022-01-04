@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"go-todo/auth/controllers"
+	auth_db "go-todo/auth/db"
 	"go-todo/auth/repository"
 	"go-todo/auth/router"
 	"go-todo/auth/service"
@@ -16,32 +17,45 @@ import (
 )
 
 var (
-	Validate       *validator.Validate       = validator.New()
-	httpRouter     router.Router             = router.NewChiRouter()
-	userRepository repository.UserRepository = repository.NewMysqlRepository()
-	userService    service.UserService       = service.NewUserService(userRepository)
-	jwtService     service.JWTService        = service.NewJWTService()
+	Validate   *validator.Validate = validator.New()
+	httpRouter router.Router       = router.NewChiRouter()
 )
 
 func main() {
-	l := getLogger()
+	logger := getLogger()
 	Validate.RegisterValidation("passwd", func(fl validator.FieldLevel) bool {
 		return len(fl.Field().String()) > 5
 	})
 
 	err := godotenv.Load(".env")
 	if err != nil {
-		l.Error("Cannot load .env")
+		logger.Error("Cannot load .env")
 	}
-	port := os.Getenv("AUTH_PORT")
+
+	db := auth_db.GetDb()
+	userRepository := repository.NewMysqlRepository(db)
+	userService := service.NewUserService(userRepository)
+	jwtService := service.NewJWTService()
 
 	c := controllers.NewAuthController(controllers.App{
 		Validator:   Validate,
-		Logger:      getLogger(),
+		Logger:      logger,
 		UserService: userService,
 		JwtService:  jwtService,
 	})
+	logger.Info("Welcome to the AUTH App")
+	initRouter(c)
+}
 
+func getLogger() *zap.SugaredLogger {
+	logger, _ := zap.NewProduction()
+	defer logger.Sync() // flushes buffer, if any
+	sugar := logger.Sugar()
+
+	return sugar
+}
+
+func initRouter(c *controllers.Auth) {
 	httpRouter.USE(middleware.Logger)
 	httpRouter.USE(cors.Handler(cors.Options{
 		AllowedOrigins: []string{"http://localhost*"},
@@ -57,15 +71,6 @@ func main() {
 	httpRouter.WITH(c.IsAuthorized).GET("/users", c.GetUsers)
 	httpRouter.WITH(c.IsAuthorized).DELETE("/user/{username}", c.DeleteUser)
 
+	port := os.Getenv("AUTH_PORT")
 	httpRouter.SERVE(port)
-
-	l.Info("Welcome to the AUTH App")
-}
-
-func getLogger() *zap.SugaredLogger {
-	logger, _ := zap.NewProduction()
-	defer logger.Sync() // flushes buffer, if any
-	sugar := logger.Sugar()
-
-	return sugar
 }

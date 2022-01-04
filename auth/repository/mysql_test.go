@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/jmoiron/sqlx"
 )
 
 var (
@@ -22,9 +23,9 @@ func mockDb(t *testing.T) (*sql.DB, sqlmock.Sqlmock) {
 		t.Errorf("Failed to create mock db")
 	}
 
-	// sqlxDB := sqlx.NewDb(mockDB, "sqlmock")
+	sqlxDB := sqlx.NewDb(mockDB, "sqlmock")
 
-	userRepository = repository.NewMysqlRepository()
+	userRepository = repository.NewMysqlRepository(sqlxDB)
 	return mockDB, mock
 }
 
@@ -87,53 +88,53 @@ func TestLogin(t *testing.T) {
 	}
 }
 
-// func TestLoginError(t *testing.T) {
-// 	mockDB, mock := mockDb(t)
-// 	defer mockDB.Close()
-// 	var username, password string = "test-user", "test-password"
+func TestLoginError(t *testing.T) {
+	mockDB, mock := mockDb(t)
+	defer mockDB.Close()
+	var username, password string = "test-user", "test-password"
 
-// 	user := entities.User{Username: username, Password: password}
-// 	err := jwtService.GeneratePassword(&user)
-// 	if err != nil {
-// 		t.Errorf("Could not generate password : %v", err)
-// 	}
-// 	// logger := zap.NewNop().Sugar()
+	user := entities.User{Username: username, Password: password}
+	err := jwtService.GeneratePassword(&user)
+	if err != nil {
+		t.Errorf("Could not generate password : %v", err)
+	}
+	// logger := zap.NewNop().Sugar()
 
-// 	// expectedRows := sqlmock.NewRows([]string{"id", "username", "password"}).AddRow("1", username, password)
-// 	mock.ExpectQuery("SELECT").WithArgs(username).WillReturnError(errors.New("invalid credentials"))
+	// expectedRows := sqlmock.NewRows([]string{"id", "username", "password"}).AddRow("1", username, password)
+	mock.ExpectQuery("SELECT").WithArgs(username).WillReturnError(errors.New("invalid credentials"))
 
-// 	_, err = repository.AuthenticateUser(sqlxDB, user, logger)
-// 	if err == nil {
-// 		t.Errorf("Expected token but got %v", err)
-// 	}
-// }
+	_, err = userRepository.Authenticate(&user)
+	if err == nil {
+		t.Errorf("Expected token but got %v", err)
+	}
+}
 
-// func TestDeleteUser(t *testing.T) {
-// 	mockDB, mock := mockDb(t)
-// 	defer mockDB.Close()
-// 	// logger := zap.NewNop().Sugar()
-// 	var username string = "test-user"
+func TestDeleteUser(t *testing.T) {
+	mockDB, mock := mockDb(t)
+	defer mockDB.Close()
+	// logger := zap.NewNop().Sugar()
+	var username string = "test-user"
 
-// 	mock.ExpectExec("DELETE").WithArgs(username).WillReturnResult(sqlmock.NewResult(1, 1))
-// 	err := repository.DeleteUser(sqlxDB, username, logger)
-// 	if err != nil {
-// 		t.Errorf("Expected nil error but got %v", err)
-// 	}
+	mock.ExpectExec("DELETE").WithArgs(username).WillReturnResult(sqlmock.NewResult(1, 1))
+	err := userRepository.Delete(username)
+	if err != nil {
+		t.Errorf("Expected nil error but got %v", err)
+	}
 
-// 	if err = mock.ExpectationsWereMet(); err != nil {
-// 		t.Errorf("Expectations were not fulfilled: %s", err)
-// 	}
-// }
+	if err = mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("Expectations were not fulfilled: %s", err)
+	}
+}
 
-// func TestDeleteUserError(t *testing.T) {
-// 	mockDB, mock := mockDb(t)
-// 	defer mockDB.Close()
-// 	// logger := zap.NewNop().Sugar()
-// 	var username string = "test-user"
+func TestDeleteUserError(t *testing.T) {
+	mockDB, mock := mockDb(t)
+	defer mockDB.Close()
+	// logger := zap.NewNop().Sugar()
+	var username string = "test-user"
 
-// 	mock.ExpectExec("DELETE").WithArgs(username).WillReturnError(errors.New("could not delete user"))
-// 	err := repository.DeleteUser(sqlxDB, username, logger)
-// 	if err == nil {
-// 		t.Errorf("Expected nil error but got %v", err)
-// 	}
-// }
+	mock.ExpectExec("DELETE").WithArgs(username).WillReturnError(errors.New("could not delete user"))
+	err := userRepository.Delete(username)
+	if err == nil {
+		t.Errorf("Expected nil error but got %v", err)
+	}
+}
