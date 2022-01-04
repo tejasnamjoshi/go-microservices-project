@@ -4,10 +4,10 @@ import (
 	"os"
 
 	"go-todo/auth/controllers"
-	auth_db "go-todo/auth/db"
 	"go-todo/auth/repository"
 	"go-todo/auth/router"
 	"go-todo/auth/service"
+	"go-todo/auth/store"
 
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -32,7 +32,7 @@ func main() {
 		logger.Error("Cannot load .env")
 	}
 
-	db := auth_db.GetDb()
+	db := store.GetDb()
 	userRepository := repository.NewMysqlRepository(db)
 	userService := service.NewUserService(userRepository)
 	jwtService := service.NewJWTService()

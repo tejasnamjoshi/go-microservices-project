@@ -1,4 +1,4 @@
-package auth_db
+package store
 
 import (
 	"fmt"
