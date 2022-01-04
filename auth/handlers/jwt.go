@@ -47,11 +47,11 @@ func (a Auth) GetAuthorizationStatus(authHeader string) (bool, error) {
 	var mySigningKey = []byte(os.Getenv("SECRET_KEY"))
 	jwtParts := strings.Split(authHeader, " ")
 	if len(jwtParts) <= 1 {
-		return false, errors.New("No Authorization Token provided")
+		return false, errors.New("no Authorization Token provided")
 	}
 	token, err := jwt.Parse(jwtParts[1], func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return false, fmt.Errorf(("Invalid Signing Method"))
+			return false, fmt.Errorf(("invalid Signing Method"))
 		}
 		aud := os.Getenv("JWT_AUD")
 		checkAudience := token.Claims.(jwt.MapClaims).VerifyAudience(aud, false)
@@ -74,5 +74,5 @@ func (a Auth) GetAuthorizationStatus(authHeader string) (bool, error) {
 		return true, nil
 	}
 
-	return false, errors.New("Invalid Token")
+	return false, errors.New("invalid Token")
 }

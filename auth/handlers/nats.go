@@ -25,6 +25,10 @@ func (a Auth) InitNats() {
 
 		var claims = &data.CustomClaims{}
 		ok, err := a.GetAuthorizationStatus(authHeader)
+		if err != nil {
+			a.l.Error("Error getting authorization status")
+			return
+		}
 		if ok {
 			claims, err = data.ParseJWT(jwtParts[1])
 			if err != nil {
@@ -32,6 +36,10 @@ func (a Auth) InitNats() {
 			}
 		}
 		resp, err := json.Marshal(*claims)
+		if err != nil {
+			a.l.Error("Error sending the data")
+			return
+		}
 		nc.Publish(msg.Reply, []byte(resp))
 	})
 }

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"fmt"
 	"go-todo/auth/data"
 
@@ -9,8 +10,9 @@ import (
 )
 
 const (
-	addUserSchema  = `INSERT INTO users (username, password) VALUES (:username, :password)`
-	authUserSchema = `SELECT * FROM users WHERE username=?`
+	addUserSchema    = `INSERT INTO users (username, password) VALUES (:username, :password)`
+	authUserSchema   = `SELECT * FROM users WHERE username=?`
+	deleteUserSchema = `DELETE FROM users where username=?`
 )
 
 func StoreUser(db *sqlx.DB, user data.User, logger *zap.SugaredLogger) (int64, error) {
@@ -59,4 +61,25 @@ func AuthenticateUser(db *sqlx.DB, user data.User, logger *zap.SugaredLogger) (s
 	}
 
 	return token, nil
+}
+
+func DeleteUser(db *sqlx.DB, username string, logger *zap.SugaredLogger) error {
+	res, err := db.Exec(deleteUserSchema, username)
+	if err != nil {
+		logger.Error(err)
+		return errors.New("could not delete user")
+	}
+	c, err := res.RowsAffected()
+	if err != nil {
+		logger.Error(err)
+		return errors.New("could not delete user")
+	}
+
+	if c != 1 {
+		m := fmt.Sprintf("Could not find user with username - %s", username)
+		logger.Error(m)
+		return errors.New(m)
+	}
+
+	return nil
 }
