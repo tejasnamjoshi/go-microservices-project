@@ -17,16 +17,16 @@ import (
 )
 
 func main() {
-	Validate := validator.New()
 	logger := logging.NewZapLogger()
-	db := store.GetDb(logger)
-
 	err := godotenv.Load(".env")
 	if err != nil {
 		logger.Error("Cannot load .env")
 	}
 
-	userRepository := repository.NewMysqlRepository(db)
+	Validate := validator.New()
+	db := store.GetDb(logger)
+
+	userRepository := repository.NewMysqlRepository(db, logger)
 	userService := service.NewUserService(userRepository, logger)
 	jwtService := service.NewJWTService(logger)
 

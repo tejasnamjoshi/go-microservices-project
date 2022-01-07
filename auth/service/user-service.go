@@ -9,10 +9,6 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-var (
-	userRepository repository.UserRepository
-)
-
 type UserService interface {
 	Validate(user *entities.User) error
 	Create(user *entities.User) error
@@ -22,12 +18,12 @@ type UserService interface {
 }
 
 type userServiceStruct struct {
-	logger logging.Logger
+	userRepository repository.UserRepository
+	logger         logging.Logger
 }
 
 func NewUserService(r repository.UserRepository, logger logging.Logger) UserService {
-	userRepository = r
-	return &userServiceStruct{logger}
+	return &userServiceStruct{r, logger}
 }
 
 func (*userServiceStruct) Validate(user *entities.User) error {
@@ -45,7 +41,7 @@ func (us *userServiceStruct) Create(user *entities.User) error {
 		us.logger.Error(err.Error())
 		return err
 	}
-	_, err = userRepository.Create(user)
+	_, err = us.userRepository.Create(user)
 	if err != nil {
 		us.logger.Error(err.Error())
 		return err
@@ -55,7 +51,7 @@ func (us *userServiceStruct) Create(user *entities.User) error {
 }
 
 func (us *userServiceStruct) Login(user *entities.User) (string, error) {
-	dbUser, err := userRepository.Authenticate(user)
+	dbUser, err := us.userRepository.Authenticate(user)
 	if err != nil {
 		return "", err
 	}
@@ -77,12 +73,12 @@ func (us *userServiceStruct) Login(user *entities.User) (string, error) {
 	return token, nil
 }
 
-func (*userServiceStruct) Delete(username string) error {
-	return userRepository.Delete(username)
+func (us *userServiceStruct) Delete(username string) error {
+	return us.userRepository.Delete(username)
 }
 
-func (*userServiceStruct) GetAll() (*entities.Users, error) {
-	users, err := userRepository.GetAll()
+func (us *userServiceStruct) GetAll() (*entities.Users, error) {
+	users, err := us.userRepository.GetAll()
 
 	return users, err
 }

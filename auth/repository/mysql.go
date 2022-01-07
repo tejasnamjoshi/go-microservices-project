@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"go-todo/auth/entities"
+	"go-todo/auth/logging"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -15,24 +16,24 @@ const (
 	selectAllSchema  = `SELECT * FROM users`
 )
 
-type repo struct{}
+type repo struct {
+	db     *sqlx.DB
+	logger logging.Logger
+}
 
-var db *sqlx.DB
-
-func NewMysqlRepository(d *sqlx.DB) UserRepository {
-	db = d
-	return &repo{}
+func NewMysqlRepository(d *sqlx.DB, logger logging.Logger) UserRepository {
+	return &repo{d, logger}
 }
 
 func (r *repo) Create(user *entities.User) (int, error) {
-	res, err := db.NamedExec(addUserSchema, user)
+	res, err := r.db.NamedExec(addUserSchema, user)
 	if err != nil {
-		// logger.Error(err)
+		r.logger.Error(err.Error())
 		return -1, err
 	}
 	id, err := res.LastInsertId()
 	if err != nil {
-		// logger.Error(err)
+		r.logger.Error(err.Error())
 		return 0, err
 	}
 
@@ -40,20 +41,20 @@ func (r *repo) Create(user *entities.User) (int, error) {
 }
 
 func (r *repo) Delete(username string) error {
-	res, err := db.Exec(deleteUserSchema, username)
+	res, err := r.db.Exec(deleteUserSchema, username)
 	if err != nil {
-		// logger.Error(err)
+		r.logger.Error(err.Error())
 		return errors.New("could not delete user")
 	}
 	c, err := res.RowsAffected()
 	if err != nil {
-		// logger.Error(err)
+		r.logger.Error(err.Error())
 		return errors.New("could not delete user")
 	}
 
 	if c != 1 {
 		m := fmt.Sprintf("Could not find user with username - %s", username)
-		// logger.Error(m)
+		r.logger.Error(m)
 		return errors.New(m)
 	}
 
@@ -61,9 +62,9 @@ func (r *repo) Delete(username string) error {
 }
 
 func (r *repo) Authenticate(user *entities.User) (*entities.User, error) {
-	row := db.QueryRow(authUserSchema, user.Username)
+	row := r.db.QueryRow(authUserSchema, user.Username)
 	if row.Err() != nil {
-		// logger.Error(row.Err().Error())
+		r.logger.Error(row.Err().Error())
 		return nil, row.Err()
 	}
 	var username, password string
@@ -72,7 +73,7 @@ func (r *repo) Authenticate(user *entities.User) (*entities.User, error) {
 	dbUser := entities.User{Id: id, Username: username, Password: password}
 	if err != nil {
 		err = fmt.Errorf("invalid credentials")
-		// logger.Error(err)
+		r.logger.Error(err.Error())
 		return nil, err
 	}
 
@@ -81,7 +82,7 @@ func (r *repo) Authenticate(user *entities.User) (*entities.User, error) {
 
 func (r *repo) GetAll() (*entities.Users, error) {
 	users := entities.Users{}
-	err := db.Select(&users, selectAllSchema)
+	err := r.db.Select(&users, selectAllSchema)
 
 	return &users, err
 }

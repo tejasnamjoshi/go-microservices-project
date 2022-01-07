@@ -4,18 +4,19 @@ import (
 	"database/sql"
 	"errors"
 	"go-todo/auth/entities"
+	"go-todo/auth/logging"
 	"go-todo/auth/repository"
 	"go-todo/auth/service"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/jmoiron/sqlx"
-	"go.uber.org/zap"
 )
 
 var (
 	userRepository repository.UserRepository
-	jwtService     service.JWTService = service.NewJWTService(zap.NewNop().Sugar())
+	logger         logging.Logger     = logging.NewZapLogger()
+	jwtService     service.JWTService = service.NewJWTService(logger)
 )
 
 func mockDb(t *testing.T) (*sql.DB, sqlmock.Sqlmock) {
@@ -26,7 +27,7 @@ func mockDb(t *testing.T) (*sql.DB, sqlmock.Sqlmock) {
 
 	sqlxDB := sqlx.NewDb(mockDB, "sqlmock")
 
-	userRepository = repository.NewMysqlRepository(sqlxDB)
+	userRepository = repository.NewMysqlRepository(sqlxDB, logger)
 	return mockDB, mock
 }
 
