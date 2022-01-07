@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"go-todo/todo/entities"
 	"go-todo/todo/logging"
 
@@ -68,6 +69,7 @@ func (m *mysql) GetByUsername(userId int) (entities.Todos, error) {
 
 	return todos, nil
 }
+
 func (m *mysql) MarkAsComplete(todoId string) error {
 	markAsCompleteSchema := "UPDATE todos SET completed = 1 where id = ?"
 
@@ -83,6 +85,7 @@ func (m *mysql) MarkAsComplete(todoId string) error {
 	}
 
 	if rowsAffected != 1 {
+		err = errors.New("could not mark todo as completed")
 		m.logger.Error(err.Error())
 		return err
 	}

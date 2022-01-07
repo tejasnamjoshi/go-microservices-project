@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"go-todo/todo/handlers"
+	"go-todo/todo/controllers"
 	"go-todo/todo/logging"
 	"go-todo/todo/repository"
+	"go-todo/todo/service"
 	"go-todo/todo/store"
 	"net/http"
 	"os"
@@ -25,7 +26,11 @@ func main() {
 
 	db := store.GetDb(logger)
 	todoRepository := repository.NewMysqlRepository(db, logger)
-	h := handlers.NewTodos(logger, db, todoRepository)
+	todoService := service.NewTodoService(todoRepository, logger)
+	h := controllers.NewTodos(controllers.App{
+		todoService,
+		logger,
+	})
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)

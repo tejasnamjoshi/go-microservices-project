@@ -1,4 +1,4 @@
-package handlers
+package controllers
 
 import (
 	"net/http"
@@ -8,7 +8,7 @@ import (
 
 func (t Todos) MarkAsComplete(rw http.ResponseWriter, r *http.Request) {
 	todoId := chi.URLParam(r, "todoId")
-	err := t.todoRepository.MarkAsComplete(todoId)
+	err := t.TodoService.MarkAsComplete(todoId)
 
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)

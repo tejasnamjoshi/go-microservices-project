@@ -1,4 +1,4 @@
-package handlers
+package controllers
 
 import (
 	"net/http"
@@ -7,10 +7,10 @@ import (
 func (t Todos) GetByUsername(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	userId := ctx.Value("userId").(int)
-	todos, err := t.todoRepository.GetByUsername(userId)
+	todos, err := t.TodoService.GetByUsername(userId)
 
 	if err != nil {
-		t.l.Error(err.Error())
+		t.Logger.Error(err.Error())
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}

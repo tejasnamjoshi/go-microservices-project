@@ -1,4 +1,4 @@
-package handlers
+package controllers
 
 import (
 	"go-todo/todo/entities"
@@ -13,21 +13,18 @@ func (t Todos) CreateNewTodo(rw http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	err := todo.FromJSON(r.Body)
 	if err != nil {
-		HandleError(err, rw, t)
+		t.Logger.Error(err.Error())
+		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	err = t.todoRepository.Create(&todo, userId)
+	err = t.TodoService.Create(&todo, userId)
 	if err != nil {
-		HandleError(err, rw, t)
+		t.Logger.Error(err.Error())
+		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	rw.WriteHeader(http.StatusOK)
 	rw.Write([]byte("TODO added successfully"))
-}
-
-func HandleError(err error, rw http.ResponseWriter, t Todos) {
-	t.l.Error(err.Error())
-	rw.WriteHeader(http.StatusInternalServerError)
 }
