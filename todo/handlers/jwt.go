@@ -32,7 +32,7 @@ func (t Todos) GetNats() (*nats.Conn, error) {
 		time.Sleep(1 * time.Second)
 	}
 	if err != nil {
-		return nil, fmt.Errorf("Error establishing connection to NATS: %s", err)
+		return nil, fmt.Errorf("error establishing connection to NATS: %s", err)
 	}
 	t.l.Info("Connected to NATS at:", nc.ConnectedUrl())
 
@@ -43,19 +43,21 @@ func (t Todos) IsAuthorized(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
+			t.l.Error("Unauthorized user access.")
 			rw.WriteHeader(http.StatusUnauthorized)
 			rw.Write([]byte("Unauthorized user access."))
 			return
 		}
 		nc, err := t.GetNats()
 		if err != nil {
+			t.l.Error("Error connecting to NATS.")
 			rw.WriteHeader(http.StatusInternalServerError)
 			rw.Write([]byte("Error connecting to NATS."))
 			return
 		}
-
 		msg, err := nc.Request("authenticate", []byte(authHeader), time.Minute)
 		if err != nil {
+			t.l.Error("Unauthorized user access.")
 			rw.WriteHeader(http.StatusUnauthorized)
 			rw.Write([]byte("Unauthorized user access."))
 			return
@@ -63,15 +65,18 @@ func (t Todos) IsAuthorized(next http.Handler) http.Handler {
 		var userClaims = &UserClaims{}
 		err = json.Unmarshal(msg.Data, userClaims)
 		if err != nil {
+			t.l.Error("Error parsing token.")
 			rw.WriteHeader(http.StatusUnauthorized)
 			rw.Write([]byte("Error parsing token."))
 			return
 		}
 		if !userClaims.Authorized {
+			t.l.Error("unauthorized user access.")
 			rw.WriteHeader(http.StatusUnauthorized)
-			rw.Write([]byte("Unauthorized user access."))
+			rw.Write([]byte("unauthorized user access."))
 			return
 		}
+
 		ctx := context.WithValue(r.Context(), "userId", userClaims.UserId)
 		next.ServeHTTP(rw, r.WithContext(ctx))
 	})

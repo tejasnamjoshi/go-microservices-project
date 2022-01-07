@@ -2,44 +2,17 @@ package handlers
 
 import (
 	"net/http"
-
-	"go-todo/todo/data"
-	todo_db "go-todo/todo/db"
-
-	"github.com/jmoiron/sqlx"
 )
-
-var getTodoIdsByUserIdSchema = `Select todo_id from users_todos where user_id=?`
-var getTodoByIds = "Select * from todos where id IN (?)"
 
 func (t Todos) GetByUsername(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	id := ctx.Value("userId").(int)
-	var todos = data.Todos{}
-	var todoIds = []int{}
-	var db = todo_db.GetDb()
-	err := db.Select(&todoIds, getTodoIdsByUserIdSchema, id)
+	userId := ctx.Value("userId").(int)
+	todos, err := t.todoRepository.GetByUsername(userId)
+
 	if err != nil {
-		t.l.Error(err)
+		t.l.Error(err.Error())
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
-	}
-
-	if len(todoIds) > 0 {
-		query, args, err := sqlx.In(getTodoByIds, todoIds)
-		if err != nil {
-			t.l.Error(err)
-			rw.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		query = db.Rebind(query)
-		err = db.Select(&todos, query, args...)
-
-		if err != nil {
-			t.l.Error(err)
-			rw.WriteHeader(http.StatusInternalServerError)
-			return
-		}
 	}
 
 	rw.Header().Add("Content-Type", "application/json")

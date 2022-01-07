@@ -16,16 +16,16 @@ const (
 	selectAllSchema  = `SELECT * FROM users`
 )
 
-type repo struct {
+type mysql struct {
 	db     *sqlx.DB
 	logger logging.Logger
 }
 
 func NewMysqlRepository(d *sqlx.DB, logger logging.Logger) UserRepository {
-	return &repo{d, logger}
+	return &mysql{d, logger}
 }
 
-func (r *repo) Create(user *entities.User) (int, error) {
+func (r *mysql) Create(user *entities.User) (int, error) {
 	res, err := r.db.NamedExec(addUserSchema, user)
 	if err != nil {
 		r.logger.Error(err.Error())
@@ -40,7 +40,7 @@ func (r *repo) Create(user *entities.User) (int, error) {
 	return int(id), nil
 }
 
-func (r *repo) Delete(username string) error {
+func (r *mysql) Delete(username string) error {
 	res, err := r.db.Exec(deleteUserSchema, username)
 	if err != nil {
 		r.logger.Error(err.Error())
@@ -61,7 +61,7 @@ func (r *repo) Delete(username string) error {
 	return nil
 }
 
-func (r *repo) Authenticate(user *entities.User) (*entities.User, error) {
+func (r *mysql) Authenticate(user *entities.User) (*entities.User, error) {
 	row := r.db.QueryRow(authUserSchema, user.Username)
 	if row.Err() != nil {
 		r.logger.Error(row.Err().Error())
@@ -80,7 +80,7 @@ func (r *repo) Authenticate(user *entities.User) (*entities.User, error) {
 	return &dbUser, nil
 }
 
-func (r *repo) GetAll() (*entities.Users, error) {
+func (r *mysql) GetAll() (*entities.Users, error) {
 	users := entities.Users{}
 	err := r.db.Select(&users, selectAllSchema)
 

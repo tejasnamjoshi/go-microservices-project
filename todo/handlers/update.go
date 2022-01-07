@@ -1,31 +1,16 @@
 package handlers
 
 import (
-	todo_db "go-todo/todo/db"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 )
 
-var markAsCompleteSchema = "UPDATE todos SET completed = 1 where id = ?"
-
 func (t Todos) MarkAsComplete(rw http.ResponseWriter, r *http.Request) {
 	todoId := chi.URLParam(r, "todoId")
-	res, err := todo_db.GetDb().Exec(markAsCompleteSchema, todoId)
-	if err != nil {
-		t.l.Error(err)
-		rw.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		t.l.Error(err)
-		rw.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	err := t.todoRepository.MarkAsComplete(todoId)
 
-	if rowsAffected != 1 {
-		t.l.Error(err)
+	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("Could not complete the todo."))
 		return

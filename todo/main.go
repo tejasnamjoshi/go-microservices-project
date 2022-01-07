@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"go-todo/todo/handlers"
+	"go-todo/todo/logging"
+	"go-todo/todo/repository"
+	"go-todo/todo/store"
 	"net/http"
 	"os"
 
@@ -10,18 +13,19 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
-	"go.uber.org/zap"
 )
 
 func main() {
-	l := getLogger()
+	logger := logging.NewZapLogger()
 	err := godotenv.Load(".env")
 	if err != nil {
-		l.Error("Error loading .env file")
+		logger.Error("Error loading .env file")
 	}
 	port := os.Getenv("TODO_PORT")
 
-	h := handlers.NewTodos(l)
+	db := store.GetDb(logger)
+	todoRepository := repository.NewMysqlRepository(db, logger)
+	h := handlers.NewTodos(logger, db, todoRepository)
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
@@ -30,25 +34,13 @@ func main() {
 		AllowedMethods: []string{"GET", "POST", "PATCH"},
 		AllowedHeaders: []string{"Accept", "Authorization", "Content-Type"},
 	}))
-
 	r.With(h.IsAuthorized).Get("/todos", h.GetByUsername)
 	r.With(h.IsAuthorized).Post("/todos", h.CreateNewTodo)
 	r.With(h.IsAuthorized).Patch("/todos/{todoId}", h.MarkAsComplete)
 
+	logger.Info("Welcome to the TODOS App")
 	err = http.ListenAndServe(fmt.Sprintf(":%s", port), r)
 	if err != nil {
-		l.Fatal(err)
+		logger.Fatal(err.Error())
 	}
-
-	l.Info("Welcome to the TODOS App")
-}
-
-func getLogger() *zap.SugaredLogger {
-	logger, _ := zap.NewProduction()
-	defer logger.Sync() // flushes buffer, if any
-	sugar := logger.Sugar()
-
-	return sugar
-
-	// l := log.New(os.Stdout, "go-todo", log.LstdFlags)
 }

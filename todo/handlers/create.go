@@ -1,19 +1,14 @@
 package handlers
 
 import (
-	"go-todo/todo/data"
-	todo_db "go-todo/todo/db"
+	"go-todo/todo/entities"
 	"net/http"
 )
 
-var createNewTodoSchema = `INSERT INTO todos (content) values (:content)`
-var createNewUserTodoSchema = `INSERT INTO users_todos (user_id, todo_id) values (?, ?)`
-
 func (t Todos) CreateNewTodo(rw http.ResponseWriter, r *http.Request) {
-	var todo = data.Todo{}
+	var todo = entities.Todo{}
 	ctx := r.Context()
 	userId := ctx.Value("userId").(int)
-	db := todo_db.GetDb()
 
 	defer r.Body.Close()
 	err := todo.FromJSON(r.Body)
@@ -21,17 +16,8 @@ func (t Todos) CreateNewTodo(rw http.ResponseWriter, r *http.Request) {
 		HandleError(err, rw, t)
 		return
 	}
-	res, err := db.NamedExec(createNewTodoSchema, todo)
-	if err != nil {
-		HandleError(err, rw, t)
-		return
-	}
-	todoId, err := res.LastInsertId()
-	if err != nil {
-		HandleError(err, rw, t)
-		return
-	}
-	res, err = db.Exec(createNewUserTodoSchema, userId, todoId)
+
+	err = t.todoRepository.Create(&todo, userId)
 	if err != nil {
 		HandleError(err, rw, t)
 		return
@@ -42,6 +28,6 @@ func (t Todos) CreateNewTodo(rw http.ResponseWriter, r *http.Request) {
 }
 
 func HandleError(err error, rw http.ResponseWriter, t Todos) {
-	t.l.Error(err)
+	t.l.Error(err.Error())
 	rw.WriteHeader(http.StatusInternalServerError)
 }
