@@ -1,8 +1,8 @@
 package logging
 
 type Logger interface {
-	Error(err string)
-	Warn(warn ...string)
-	Info(info ...string)
-	Fatal(fatal ...string)
+	Error(args ...interface{})
+	Warn(args ...interface{})
+	Info(args ...interface{})
+	Fatal(args ...interface{})
 }

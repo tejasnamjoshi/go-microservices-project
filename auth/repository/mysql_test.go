@@ -39,7 +39,6 @@ func TestStoreUser(t *testing.T) {
 
 	mock.ExpectExec(`INSERT INTO users`).WithArgs(user.Username, user.Password).WillReturnResult(sqlmock.NewResult(int64(expectedId), 1))
 
-	// logger := zap.NewNop().Sugar()
 	id, err := userRepository.Create(&user)
 	if err != nil {
 		t.Errorf("Expected user with id %d but got error %s", expectedId, err)
@@ -62,7 +61,6 @@ func TestStoreUserError(t *testing.T) {
 
 	mock.ExpectExec(`INSERT INTO users`).WithArgs(user.Username, user.Password).WillReturnError(errors.New("failed to insert"))
 
-	// logger := zap.NewNop().Sugar()
 	id, err := userRepository.Create(&user)
 	if err == nil || id != -1 {
 		t.Errorf("Expected user with id %d but got error %s", expectedId, err)
@@ -79,7 +77,6 @@ func TestLogin(t *testing.T) {
 	if err != nil {
 		t.Errorf("Could not generate password : %v", err)
 	}
-	// logger := zap.NewNop().Sugar()
 
 	expectedRows := sqlmock.NewRows([]string{"id", "username", "password"}).AddRow("1", username, password)
 	mock.ExpectQuery("SELECT").WithArgs(username).WillReturnRows(expectedRows)
@@ -100,9 +97,6 @@ func TestLoginError(t *testing.T) {
 	if err != nil {
 		t.Errorf("Could not generate password : %v", err)
 	}
-	// logger := zap.NewNop().Sugar()
-
-	// expectedRows := sqlmock.NewRows([]string{"id", "username", "password"}).AddRow("1", username, password)
 	mock.ExpectQuery("SELECT").WithArgs(username).WillReturnError(errors.New("invalid credentials"))
 
 	_, err = userRepository.Authenticate(&user)
@@ -114,7 +108,6 @@ func TestLoginError(t *testing.T) {
 func TestDeleteUser(t *testing.T) {
 	mockDB, mock := mockDb(t)
 	defer mockDB.Close()
-	// logger := zap.NewNop().Sugar()
 	var username string = "test-user"
 
 	mock.ExpectExec("DELETE").WithArgs(username).WillReturnResult(sqlmock.NewResult(1, 1))
@@ -131,7 +124,6 @@ func TestDeleteUser(t *testing.T) {
 func TestDeleteUserError(t *testing.T) {
 	mockDB, mock := mockDb(t)
 	defer mockDB.Close()
-	// logger := zap.NewNop().Sugar()
 	var username string = "test-user"
 
 	mock.ExpectExec("DELETE").WithArgs(username).WillReturnError(errors.New("could not delete user"))
