@@ -28,7 +28,7 @@ func (z *zaplogger) Warn(warn ...string) {
 func (z *zaplogger) Info(info ...string) {
 	z.Logger.Info(info)
 }
-func (z *zaplogger) Fatal(fatal string) {
+func (z *zaplogger) Fatal(fatal ...string) {
 	z.Logger.Fatal(fatal)
 	os.Exit(1)
 }
