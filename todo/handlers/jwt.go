@@ -12,7 +12,7 @@ import (
 )
 
 type UserClaims struct {
-	UserId     int64  `json:"userId"`
+	UserId     int    `json:"userId"`
 	Username   string `json:"username"`
 	Authorized bool   `json:"authorized"`
 }

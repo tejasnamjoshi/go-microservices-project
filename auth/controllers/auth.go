@@ -1,15 +1,15 @@
 package controllers
 
 import (
+	"go-todo/auth/logging"
 	"go-todo/auth/service"
 
 	"github.com/go-playground/validator/v10"
-	"go.uber.org/zap"
 )
 
 type App struct {
 	Validator   *validator.Validate
-	Logger      *zap.SugaredLogger
+	Logger      logging.Logger
 	JwtService  service.JWTService
 	UserService service.UserService
 }

@@ -14,7 +14,7 @@ var getTodoByIds = "Select * from todos where id IN (?)"
 
 func (t Todos) GetByUsername(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	id := ctx.Value("userId").(int64)
+	id := ctx.Value("userId").(int)
 	var todos = data.Todos{}
 	var todoIds = []int{}
 	var db = todo_db.GetDb()

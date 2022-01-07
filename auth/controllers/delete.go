@@ -21,5 +21,8 @@ func (a Auth) DeleteUser(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	rw.WriteHeader(http.StatusOK)
-	rw.Write([]byte("Deleted user successfully."))
+	_, err = rw.Write([]byte("Deleted user successfully."))
+	if err != nil {
+		a.Logger.Error(err.Error())
+	}
 }

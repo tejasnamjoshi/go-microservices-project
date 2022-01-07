@@ -10,11 +10,12 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/jmoiron/sqlx"
+	"go.uber.org/zap"
 )
 
 var (
 	userRepository repository.UserRepository
-	jwtService     service.JWTService = service.NewJWTService()
+	jwtService     service.JWTService = service.NewJWTService(zap.NewNop().Sugar())
 )
 
 func mockDb(t *testing.T) (*sql.DB, sqlmock.Sqlmock) {
@@ -32,10 +33,10 @@ func mockDb(t *testing.T) (*sql.DB, sqlmock.Sqlmock) {
 func TestStoreUser(t *testing.T) {
 	mockDB, mock := mockDb(t)
 	defer mockDB.Close()
-	var expectedId int64 = 1
+	var expectedId int = 1
 	user := entities.User{Username: "test-user", Password: "test-password"}
 
-	mock.ExpectExec(`INSERT INTO users`).WithArgs(user.Username, user.Password).WillReturnResult(sqlmock.NewResult(expectedId, 1))
+	mock.ExpectExec(`INSERT INTO users`).WithArgs(user.Username, user.Password).WillReturnResult(sqlmock.NewResult(int64(expectedId), 1))
 
 	// logger := zap.NewNop().Sugar()
 	id, err := userRepository.Create(&user)
@@ -55,7 +56,7 @@ func TestStoreUser(t *testing.T) {
 func TestStoreUserError(t *testing.T) {
 	mockDB, mock := mockDb(t)
 	defer mockDB.Close()
-	var expectedId int64 = 1
+	var expectedId int = 1
 	user := entities.User{Username: "test-user", Password: "test-password"}
 
 	mock.ExpectExec(`INSERT INTO users`).WithArgs(user.Username, user.Password).WillReturnError(errors.New("failed to insert"))

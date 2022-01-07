@@ -9,9 +9,9 @@ import (
 )
 
 func (a Auth) InitNats() {
-	nc, err := data.GetNats()
+	nc, err := data.GetNats(a.Logger)
 	if err != nil {
-		a.Logger.Fatal(err)
+		a.Logger.Fatal(err.Error())
 	}
 
 	a.Logger.Info("Listening for auth", nc.ConnectedUrl())

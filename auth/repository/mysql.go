@@ -24,7 +24,7 @@ func NewMysqlRepository(d *sqlx.DB) UserRepository {
 	return &repo{}
 }
 
-func (r *repo) Create(user *entities.User) (int64, error) {
+func (r *repo) Create(user *entities.User) (int, error) {
 	res, err := db.NamedExec(addUserSchema, user)
 	if err != nil {
 		// logger.Error(err)
@@ -33,10 +33,10 @@ func (r *repo) Create(user *entities.User) (int64, error) {
 	id, err := res.LastInsertId()
 	if err != nil {
 		// logger.Error(err)
-		return -1, err
+		return 0, err
 	}
 
-	return id, nil
+	return int(id), nil
 }
 
 func (r *repo) Delete(username string) error {
@@ -67,7 +67,7 @@ func (r *repo) Authenticate(user *entities.User) (*entities.User, error) {
 		return nil, row.Err()
 	}
 	var username, password string
-	var id int64
+	var id int
 	err := row.Scan(&id, &username, &password)
 	dbUser := entities.User{Id: id, Username: username, Password: password}
 	if err != nil {

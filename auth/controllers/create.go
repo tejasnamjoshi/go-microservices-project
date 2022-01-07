@@ -20,7 +20,7 @@ func (a Auth) AddUser(rw http.ResponseWriter, r *http.Request) {
 	// Validate Input
 	err := a.UserService.Validate(&user)
 	if err != nil {
-		a.Logger.Error(err)
+		a.Logger.Error(err.Error())
 		utils.CreateHttpError(rw, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -34,7 +34,10 @@ func (a Auth) AddUser(rw http.ResponseWriter, r *http.Request) {
 
 	// Send Response
 	rw.WriteHeader(http.StatusOK)
-	rw.Write([]byte("New User created successfully"))
+	_, err = rw.Write([]byte("New User created successfully"))
+	if err != nil {
+		a.Logger.Error(err.Error())
+	}
 }
 
 func (a Auth) Login(rw http.ResponseWriter, r *http.Request) {
@@ -44,14 +47,14 @@ func (a Auth) Login(rw http.ResponseWriter, r *http.Request) {
 	user.FromJSON(r.Body)
 	err := a.UserService.Validate(&user)
 	if err != nil {
-		a.Logger.Error(err)
+		a.Logger.Error(err.Error())
 		utils.CreateHttpError(rw, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	token, err := a.UserService.Login(&user)
 	if err != nil {
-		a.Logger.Error(err)
+		a.Logger.Error(err.Error())
 		utils.CreateHttpError(rw, http.StatusUnauthorized, "Error logging in.")
 		return
 	}
@@ -59,5 +62,8 @@ func (a Auth) Login(rw http.ResponseWriter, r *http.Request) {
 	rw.Header().Add("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusOK)
 	e := json.NewEncoder(rw)
-	e.Encode(LoginResp{Token: token})
+	err = e.Encode(LoginResp{Token: token})
+	if err != nil {
+		a.Logger.Error(err.Error())
+	}
 }

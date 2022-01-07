@@ -7,7 +7,7 @@ import (
 )
 
 type Todo struct {
-	Id        int64  `db:"id"`
+	Id        int    `db:"id"`
 	Content   string `db:"content"`
 	Completed bool   `db:"completed"`
 }

@@ -12,7 +12,7 @@ var createNewUserTodoSchema = `INSERT INTO users_todos (user_id, todo_id) values
 func (t Todos) CreateNewTodo(rw http.ResponseWriter, r *http.Request) {
 	var todo = data.Todo{}
 	ctx := r.Context()
-	userId := ctx.Value("userId").(int64)
+	userId := ctx.Value("userId").(int)
 	db := todo_db.GetDb()
 
 	defer r.Body.Close()

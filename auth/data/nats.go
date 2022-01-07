@@ -2,13 +2,14 @@ package data
 
 import (
 	"fmt"
+	"go-todo/auth/logging"
 	"os"
 	"time"
 
 	"github.com/nats-io/nats.go"
 )
 
-func GetNats() (*nats.Conn, error) {
+func GetNats(logger logging.Logger) (*nats.Conn, error) {
 	var nc *nats.Conn
 	uri := os.Getenv("NATS_URI")
 	var err error
@@ -19,13 +20,15 @@ func GetNats() (*nats.Conn, error) {
 			break
 		}
 
-		fmt.Println("Waiting before connecting to NATS at:", uri)
+		logger.Info("Waiting before connecting to NATS at:", uri)
 		time.Sleep(1 * time.Second)
 	}
 	if err != nil {
-		return nil, fmt.Errorf("error establishing connection to NATS: %s", err)
+		err := fmt.Errorf("error establishing connection to NATS: %s", err)
+		logger.Error(err.Error())
+		return nil, err
 	}
-	fmt.Println("Connected to NATS at:", nc.ConnectedUrl())
+	logger.Info("Connected to NATS at:", nc.ConnectedUrl())
 
 	return nc, nil
 }

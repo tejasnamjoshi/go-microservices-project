@@ -12,16 +12,17 @@ type AuthRequest struct {
 func (a Auth) GetUsers(rw http.ResponseWriter, r *http.Request) {
 	users, err := a.UserService.GetAll()
 	if err != nil {
-		a.Logger.Error(err)
+		a.Logger.Error(err.Error())
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	rw.Header().Add("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusOK)
-	users.ToJSON(rw)
-
-	a.Logger.Info("Users Fetched")
+	err = users.ToJSON(rw)
+	if err != nil {
+		a.Logger.Error(err.Error())
+	}
 }
 
 func (a Auth) DecodeToken(rw http.ResponseWriter, r *http.Request) {
@@ -33,13 +34,16 @@ func (a Auth) DecodeToken(rw http.ResponseWriter, r *http.Request) {
 	}
 	claims, err := a.JwtService.GetAuthorizationData(token)
 	if err != nil {
-		a.Logger.Error(err)
+		a.Logger.Error(err.Error())
 		rw.WriteHeader(http.StatusUnauthorized)
-		rw.Write([]byte("Unautorized access"))
+		rw.Write([]byte("Unauthorized access"))
 		return
 	}
 	rw.Header().Add("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusOK)
 	e := json.NewEncoder(rw)
-	e.Encode(claims)
+	err = e.Encode(claims)
+	if err != nil {
+		a.Logger.Error(err.Error())
+	}
 }

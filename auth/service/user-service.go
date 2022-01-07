@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"go-todo/auth/entities"
+	"go-todo/auth/logging"
 	"go-todo/auth/repository"
 
 	"github.com/go-playground/validator/v10"
@@ -20,11 +21,13 @@ type UserService interface {
 	GetAll() (*entities.Users, error)
 }
 
-type userServiceStruct struct{}
+type userServiceStruct struct {
+	logger logging.Logger
+}
 
-func NewUserService(r repository.UserRepository) UserService {
+func NewUserService(r repository.UserRepository, logger logging.Logger) UserService {
 	userRepository = r
-	return &userServiceStruct{}
+	return &userServiceStruct{logger}
 }
 
 func (*userServiceStruct) Validate(user *entities.User) error {
@@ -35,37 +38,39 @@ func (*userServiceStruct) Validate(user *entities.User) error {
 	return v.Struct(user)
 }
 
-func (*userServiceStruct) Create(user *entities.User) error {
-	jwtService := NewJWTService()
+func (us *userServiceStruct) Create(user *entities.User) error {
+	jwtService := NewJWTService(us.logger)
 	err := jwtService.GeneratePassword(user)
 	if err != nil {
+		us.logger.Error(err.Error())
 		return err
 	}
 	_, err = userRepository.Create(user)
 	if err != nil {
+		us.logger.Error(err.Error())
 		return err
 	}
 
 	return nil
 }
 
-func (*userServiceStruct) Login(user *entities.User) (string, error) {
+func (us *userServiceStruct) Login(user *entities.User) (string, error) {
 	dbUser, err := userRepository.Authenticate(user)
 	if err != nil {
 		return "", err
 	}
-	jwtService := NewJWTService()
+	jwtService := NewJWTService(us.logger)
 	isValid := jwtService.ComparePassword(user, dbUser)
 
 	if !isValid {
 		err = errors.New("invalid credentials")
-		// logger.Error(err)
+		us.logger.Error(err.Error())
 		return "", err
 	}
 
 	token, err := jwtService.GetJWT(dbUser)
 	if err != nil {
-		// logger.Error(err)
+		us.logger.Error(err.Error())
 		return "", err
 	}
 

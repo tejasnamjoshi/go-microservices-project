@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"go-todo/auth/controllers"
+	"go-todo/auth/logging"
 	"go-todo/auth/repository"
 	"go-todo/auth/router"
 	"go-todo/auth/service"
@@ -13,29 +14,21 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
-	"go.uber.org/zap"
-)
-
-var (
-	Validate   *validator.Validate = validator.New()
-	httpRouter router.Router       = router.NewChiRouter()
 )
 
 func main() {
-	logger := getLogger()
-	Validate.RegisterValidation("passwd", func(fl validator.FieldLevel) bool {
-		return len(fl.Field().String()) > 5
-	})
+	Validate := validator.New()
+	logger := logging.NewZapLogger()
+	db := store.GetDb(logger)
 
 	err := godotenv.Load(".env")
 	if err != nil {
 		logger.Error("Cannot load .env")
 	}
 
-	db := store.GetDb()
 	userRepository := repository.NewMysqlRepository(db)
-	userService := service.NewUserService(userRepository)
-	jwtService := service.NewJWTService()
+	userService := service.NewUserService(userRepository, logger)
+	jwtService := service.NewJWTService(logger)
 
 	c := controllers.NewAuthController(controllers.App{
 		Validator:   Validate,
@@ -47,15 +40,8 @@ func main() {
 	initRouter(c)
 }
 
-func getLogger() *zap.SugaredLogger {
-	logger, _ := zap.NewProduction()
-	defer logger.Sync() // flushes buffer, if any
-	sugar := logger.Sugar()
-
-	return sugar
-}
-
 func initRouter(c *controllers.Auth) {
+	httpRouter := router.NewChiRouter()
 	httpRouter.USE(middleware.Logger)
 	httpRouter.USE(cors.Handler(cors.Options{
 		AllowedOrigins: []string{"http://localhost*"},

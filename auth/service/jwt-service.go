@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"go-todo/auth/entities"
+	"go-todo/auth/logging"
 	"os"
 	"strconv"
 	"time"
@@ -18,22 +19,25 @@ type JWTService interface {
 	GetAuthorizationData(authHeader string) (*CustomClaims, error)
 }
 
-type JWTServiceStruct struct{}
+type JWTServiceStruct struct {
+	logger logging.Logger
+}
 
 type CustomClaims struct {
-	UserId     int64  `json:"userId"`
+	UserId     int    `json:"userId"`
 	Username   string `json:"username"`
 	Authorized bool   `json:"authorized"`
 	jwt.StandardClaims
 }
 
-func NewJWTService() JWTService {
-	return &JWTServiceStruct{}
+func NewJWTService(logger logging.Logger) JWTService {
+	return &JWTServiceStruct{logger}
 }
 
-func (*JWTServiceStruct) GeneratePassword(user *entities.User) error {
+func (js *JWTServiceStruct) GeneratePassword(user *entities.User) error {
 	pwd, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.MinCost)
 	if err != nil {
+		js.logger.Error(err.Error())
 		return err
 	}
 
@@ -46,7 +50,7 @@ func (*JWTServiceStruct) ComparePassword(user *entities.User, dbUser *entities.U
 	return err == nil
 }
 
-func (*JWTServiceStruct) GetJWT(user *entities.User) (string, error) {
+func (js *JWTServiceStruct) GetJWT(user *entities.User) (string, error) {
 	var mySigningKey = []byte(os.Getenv("SECRET_KEY"))
 	st, _ := strconv.Atoi(os.Getenv("SESSION_TIME"))
 	claims := CustomClaims{
@@ -64,28 +68,35 @@ func (*JWTServiceStruct) GetJWT(user *entities.User) (string, error) {
 	tokenString, err := token.SignedString(mySigningKey)
 
 	if err != nil {
+		js.logger.Error(err.Error())
 		return "", err
 	}
 
 	return tokenString, nil
 }
 
-func ParseJWT(tokenString string) (*CustomClaims, error) {
+func ParseJWT(tokenString string, logger logging.Logger) (*CustomClaims, error) {
 	var mySigningKey = []byte(os.Getenv("SECRET_KEY"))
 
 	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return false, errors.New(("invalid Signing Method"))
+			err := errors.New(("invalid Signing Method"))
+			logger.Error(err.Error())
+			return false, err
 		}
 		aud := os.Getenv("JWT_AUD")
 		checkAudience := token.Claims.(*CustomClaims).VerifyAudience(aud, false)
 		if !checkAudience {
-			return false, errors.New(("invalid aud"))
+			err := errors.New(("invalid aud"))
+			logger.Error(err.Error())
+			return false, err
 		}
 		iss := os.Getenv("JWT_ISS")
 		checkIss := token.Claims.(*CustomClaims).VerifyIssuer(iss, false)
 		if !checkIss {
-			return false, errors.New(("invalid iss"))
+			err := errors.New(("invalid iss"))
+			logger.Error(err.Error())
+			return false, err
 		}
 		return mySigningKey, nil
 	})
@@ -96,16 +107,20 @@ func ParseJWT(tokenString string) (*CustomClaims, error) {
 
 	claims, ok := token.Claims.(*CustomClaims)
 	if !ok || !token.Valid {
-		return nil, errors.New("error decoding token")
+		err := errors.New(("error decoding token"))
+		logger.Error(err.Error())
+		return nil, err
 	}
 
 	return claims, nil
 }
 
-func (*JWTServiceStruct) GetAuthorizationData(userToken string) (*CustomClaims, error) {
+func (js *JWTServiceStruct) GetAuthorizationData(userToken string) (*CustomClaims, error) {
 	if userToken == "" {
-		return nil, errors.New("no Authorization Token provided")
+		err := errors.New("no Authorization Token provided")
+		js.logger.Error(err.Error())
+		return nil, err
 	}
 
-	return ParseJWT(userToken)
+	return ParseJWT(userToken, js.logger)
 }
