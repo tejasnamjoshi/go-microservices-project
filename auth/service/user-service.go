@@ -20,10 +20,11 @@ type UserService interface {
 type userServiceStruct struct {
 	userRepository repository.UserRepository
 	logger         logging.Logger
+	jwtService     JWTService
 }
 
-func NewUserService(r repository.UserRepository, logger logging.Logger) UserService {
-	return &userServiceStruct{r, logger}
+func NewUserService(r repository.UserRepository, logger logging.Logger, jwtService JWTService) UserService {
+	return &userServiceStruct{r, logger, jwtService}
 }
 
 func (*userServiceStruct) Validate(user *entities.User) error {
@@ -35,8 +36,7 @@ func (*userServiceStruct) Validate(user *entities.User) error {
 }
 
 func (us *userServiceStruct) Create(user *entities.User) error {
-	jwtService := NewJWTService(us.logger)
-	err := jwtService.GeneratePassword(user)
+	err := us.jwtService.GeneratePassword(user)
 	if err != nil {
 		us.logger.Error(err.Error())
 		return err
@@ -55,8 +55,7 @@ func (us *userServiceStruct) Login(user *entities.User) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	jwtService := NewJWTService(us.logger)
-	isValid := jwtService.ComparePassword(user, dbUser)
+	isValid := us.jwtService.ComparePassword(user, dbUser)
 
 	if !isValid {
 		err = errors.New("invalid credentials")
@@ -64,7 +63,7 @@ func (us *userServiceStruct) Login(user *entities.User) (string, error) {
 		return "", err
 	}
 
-	token, err := jwtService.GetJWT(dbUser)
+	token, err := us.jwtService.GetJWT(dbUser)
 	if err != nil {
 		us.logger.Error(err.Error())
 		return "", err
@@ -78,7 +77,5 @@ func (us *userServiceStruct) Delete(username string) error {
 }
 
 func (us *userServiceStruct) GetAll() (*entities.Users, error) {
-	users, err := us.userRepository.GetAll()
-
-	return users, err
+	return us.userRepository.GetAll()
 }

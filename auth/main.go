@@ -21,12 +21,12 @@ func main() {
 
 	db := store.GetDb(logger)
 	userRepository := repository.NewMysqlRepository(db, logger)
+	jwtService := service.NewJWTService(logger)
 
 	c := controllers.NewAuthController(controllers.App{
 		Validator:   validator.New(),
 		Logger:      logger,
-		UserService: service.NewUserService(userRepository, logger),
-		JwtService:  service.NewJWTService(logger),
+		UserService: service.NewUserService(userRepository, logger, jwtService),
 	})
 
 	logger.Info("Welcome to the AUTH App")

@@ -9,13 +9,6 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-const (
-	addUserSchema    = `INSERT INTO users (username, password) VALUES (:username, :password)`
-	authUserSchema   = `SELECT * FROM users WHERE username=?`
-	deleteUserSchema = `DELETE FROM users where username=?`
-	selectAllSchema  = `SELECT * FROM users`
-)
-
 type mysql struct {
 	db     *sqlx.DB
 	logger logging.Logger
@@ -26,10 +19,11 @@ func NewMysqlRepository(d *sqlx.DB, logger logging.Logger) UserRepository {
 }
 
 func (r *mysql) Create(user *entities.User) (int, error) {
+	var addUserSchema = `INSERT INTO users (username, password) VALUES (:username, :password)`
 	res, err := r.db.NamedExec(addUserSchema, user)
 	if err != nil {
 		r.logger.Error(err.Error())
-		return -1, err
+		return 0, err
 	}
 	id, err := res.LastInsertId()
 	if err != nil {
@@ -41,6 +35,7 @@ func (r *mysql) Create(user *entities.User) (int, error) {
 }
 
 func (r *mysql) Delete(username string) error {
+	var deleteUserSchema = `DELETE FROM users where username=?`
 	res, err := r.db.Exec(deleteUserSchema, username)
 	if err != nil {
 		r.logger.Error(err.Error())
@@ -62,6 +57,7 @@ func (r *mysql) Delete(username string) error {
 }
 
 func (r *mysql) Authenticate(user *entities.User) (*entities.User, error) {
+	var authUserSchema = `SELECT * FROM users WHERE username=?`
 	row := r.db.QueryRow(authUserSchema, user.Username)
 	if row.Err() != nil {
 		r.logger.Error(row.Err().Error())
@@ -70,17 +66,18 @@ func (r *mysql) Authenticate(user *entities.User) (*entities.User, error) {
 	var username, password string
 	var id int
 	err := row.Scan(&id, &username, &password)
-	dbUser := entities.User{Id: id, Username: username, Password: password}
 	if err != nil {
 		err = fmt.Errorf("invalid credentials")
 		r.logger.Error(err.Error())
 		return nil, err
 	}
+	dbUser := entities.User{Id: id, Username: username, Password: password}
 
 	return &dbUser, nil
 }
 
 func (r *mysql) GetAll() (*entities.Users, error) {
+	var selectAllSchema = `SELECT * FROM users`
 	users := entities.Users{}
 	err := r.db.Select(&users, selectAllSchema)
 

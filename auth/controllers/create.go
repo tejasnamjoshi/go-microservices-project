@@ -12,7 +12,7 @@ type LoginResp struct {
 }
 
 func (a Auth) AddUser(rw http.ResponseWriter, r *http.Request) {
-	// Manipulate Input
+	// Format Input
 	defer r.Body.Close()
 	var user = entities.User{}
 	user.FromJSON(r.Body)

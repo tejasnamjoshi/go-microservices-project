@@ -13,7 +13,6 @@ func (a Auth) DeleteUser(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// userService := service.NewUserService()
 	err := a.UserService.Delete(username)
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
