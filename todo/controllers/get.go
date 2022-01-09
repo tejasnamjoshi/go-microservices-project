@@ -15,5 +15,5 @@ func (t Todos) GetByUsername(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t.Response.CreateSuccessResponse(rw, todos)
+	t.Response.SendSuccessResponse(rw, todos)
 }

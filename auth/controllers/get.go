@@ -16,7 +16,7 @@ func (a Auth) GetUsers(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	a.Response.CreateSuccessResponse(rw, users)
+	a.Response.SendSuccessResponse(rw, users)
 }
 
 func (a Auth) DecodeToken(rw http.ResponseWriter, r *http.Request) {
@@ -33,5 +33,5 @@ func (a Auth) DecodeToken(rw http.ResponseWriter, r *http.Request) {
 		rw.Write([]byte("Unauthorized access"))
 		return
 	}
-	a.Response.CreateSuccessResponse(rw, claims)
+	a.Response.SendSuccessResponse(rw, claims)
 }

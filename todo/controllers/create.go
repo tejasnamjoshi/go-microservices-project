@@ -25,5 +25,5 @@ func (t Todos) CreateNewTodo(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t.Response.CreateSuccessResponse(rw, "TODO added successfully")
+	t.Response.SendSuccessResponse(rw, "TODO added successfully")
 }

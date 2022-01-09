@@ -6,8 +6,8 @@ import (
 )
 
 type Response interface {
-	CreateSuccessResponse(rw http.ResponseWriter, data interface{})
-	CreateHttpError(rw http.ResponseWriter, code int, message string)
+	SendSuccessResponse(rw http.ResponseWriter, data interface{})
+	SendErrorResponse(rw http.ResponseWriter, code int, message string)
 }
 
 type response struct {

@@ -16,5 +16,5 @@ func (t Todos) MarkAsComplete(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t.Response.CreateSuccessResponse(rw, "Todo marked as completed")
+	t.Response.SendSuccessResponse(rw, "Todo marked as completed")
 }

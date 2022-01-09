@@ -19,5 +19,5 @@ func (a Auth) DeleteUser(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	a.Response.CreateSuccessResponse(rw, "Deleted user successfully")
+	a.Response.SendSuccessResponse(rw, "Deleted user successfully")
 }
