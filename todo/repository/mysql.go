@@ -41,8 +41,8 @@ func (m *mysql) Create(todo *entities.Todo, userId int) error {
 }
 
 func (m *mysql) GetByUsername(userId int) (entities.Todos, error) {
-	getTodoIdsByUserIdSchema := `Select todo_id from users_todos where user_id=?`
-	getTodoByIds := "Select * from todos where id IN (?)"
+	getTodoIdsByUserIdSchema := `SELECT todo_id from users_todos where user_id=?`
+	getTodoByIds := "SELECT * from todos where id IN (?)"
 
 	var todos = entities.Todos{}
 	var todoIds = []int{}

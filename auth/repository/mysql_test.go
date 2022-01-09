@@ -14,7 +14,7 @@ import (
 )
 
 func mockDb(t *testing.T) (*sql.DB, sqlmock.Sqlmock, *sqlx.DB) {
-	mockDB, mock, err := sqlmock.New()
+	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 	if err != nil {
 		t.Errorf("Failed to create mock db")
 	}
@@ -64,17 +64,18 @@ func Test_mysql_Create(t *testing.T) {
 			wantErr: true,
 		},
 	}
+	query := "INSERT INTO users (username, password) VALUES (?, ?)"
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := NewMysqlRepository(tt.fields.db, tt.fields.logger)
 			var expectedId int64 = 1
 
 			if tt.name == "error-exec" {
-				mock.ExpectExec(`INSERT INTO users`).WithArgs(tt.args.user.Username, tt.args.user.Password).WillReturnError(errors.New("could not create user"))
+				mock.ExpectExec(query).WithArgs(tt.args.user.Username, tt.args.user.Password).WillReturnError(errors.New("could not create user"))
 			} else if tt.name == "error-last-insertId" {
-				mock.ExpectExec(`INSERT INTO users`).WithArgs(tt.args.user.Username, tt.args.user.Password).WillReturnResult(sqlmock.NewErrorResult(errors.New("could not fetch last inserted id")))
+				mock.ExpectExec(query).WithArgs(tt.args.user.Username, tt.args.user.Password).WillReturnResult(sqlmock.NewErrorResult(errors.New("could not fetch last inserted id")))
 			} else {
-				mock.ExpectExec(`INSERT INTO users`).WithArgs(tt.args.user.Username, tt.args.user.Password).WillReturnResult(sqlmock.NewResult(expectedId, 1))
+				mock.ExpectExec(query).WithArgs(tt.args.user.Username, tt.args.user.Password).WillReturnResult(sqlmock.NewResult(expectedId, 1))
 			}
 
 			got, err := r.Create(tt.args.user)
@@ -132,19 +133,20 @@ func Test_mysql_Delete(t *testing.T) {
 			wantErr: true,
 		},
 	}
+	query := "DELETE FROM users where username=?"
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := NewMysqlRepository(tt.fields.db,
 				tt.fields.logger)
 
 			if tt.name == "error-exec" {
-				mock.ExpectExec("DELETE").WithArgs(tt.args.username).WillReturnError(errors.New("could not delete user"))
+				mock.ExpectExec(query).WithArgs(tt.args.username).WillReturnError(errors.New("could not delete user"))
 			} else if tt.name == "error-rows-affected" {
-				mock.ExpectExec("DELETE").WithArgs(tt.args.username).WillReturnResult(sqlmock.NewErrorResult(errors.New("could not get rows affected")))
+				mock.ExpectExec(query).WithArgs(tt.args.username).WillReturnResult(sqlmock.NewErrorResult(errors.New("could not get rows affected")))
 			} else if tt.name == "error-rows-affected-0" {
-				mock.ExpectExec("DELETE").WithArgs(tt.args.username).WillReturnResult(sqlmock.NewResult(1, 0))
+				mock.ExpectExec(query).WithArgs(tt.args.username).WillReturnResult(sqlmock.NewResult(1, 0))
 			} else {
-				mock.ExpectExec("DELETE").WithArgs(tt.args.username).WillReturnResult(sqlmock.NewResult(1, 1))
+				mock.ExpectExec(query).WithArgs(tt.args.username).WillReturnResult(sqlmock.NewResult(1, 1))
 			}
 
 			if err := r.Delete(tt.args.username); (err != nil) != tt.wantErr {
@@ -196,18 +198,19 @@ func Test_mysql_Authenticate(t *testing.T) {
 			wantErr: true,
 		},
 	}
+	query := "SELECT * FROM users WHERE username=?"
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := NewMysqlRepository(tt.fields.db, tt.fields.logger)
 
 			if tt.name == "error-scan" {
-				mock.ExpectQuery("SELECT").WithArgs(tt.args.user.Username).WillReturnError(errors.New("invalid credentials"))
+				mock.ExpectQuery(query).WithArgs(tt.args.user.Username).WillReturnError(errors.New("invalid credentials"))
 			} else if tt.name == "error-row" {
 				expectedRows := sqlmock.NewRows([]string{"id", "username", "password"})
-				mock.ExpectQuery("SELECT").WithArgs(tt.args.user.Username).WillReturnRows(expectedRows)
+				mock.ExpectQuery(query).WithArgs(tt.args.user.Username).WillReturnRows(expectedRows)
 			} else {
 				expectedRows := sqlmock.NewRows([]string{"id", "username", "password"}).AddRow("1", tt.args.user.Username, tt.args.user.Password)
-				mock.ExpectQuery("SELECT").WithArgs(tt.args.user.Username).WillReturnRows(expectedRows)
+				mock.ExpectQuery(query).WithArgs(tt.args.user.Username).WillReturnRows(expectedRows)
 			}
 
 			got, err := r.Authenticate(tt.args.user)
@@ -254,15 +257,16 @@ func Test_mysql_GetAll(t *testing.T) {
 			wantErr: true,
 		},
 	}
+	query := "SELECT * FROM users"
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := NewMysqlRepository(tt.fields.db, tt.fields.logger)
 
 			if tt.name == "error" {
-				mock.ExpectQuery("SELECT").WillReturnError(errors.New("failed to fetch records"))
+				mock.ExpectQuery(query).WillReturnError(errors.New("failed to fetch records"))
 			} else {
 				expectedRows := sqlmock.NewRows([]string{"id", "username", "password"}).AddRow("1", "test-username", "test-password").AddRow("2", "test-username-2", "test-password-2")
-				mock.ExpectQuery("SELECT").WillReturnRows(expectedRows)
+				mock.ExpectQuery(query).WillReturnRows(expectedRows)
 			}
 
 			got, err := r.GetAll()
