@@ -10,7 +10,7 @@ type SuccessResponse struct {
 	Payload    interface{} `json:"payload"`
 }
 
-func (r *response) CreateSuccessResponse(rw http.ResponseWriter, data interface{}) {
+func (r *response) SendSuccessResponse(rw http.ResponseWriter, data interface{}) {
 	resp := SuccessResponse{
 		StatusCode: http.StatusOK,
 		Payload:    data,
@@ -20,7 +20,7 @@ func (r *response) CreateSuccessResponse(rw http.ResponseWriter, data interface{
 	encoder := json.NewEncoder(rw)
 	err := encoder.Encode(resp)
 	if err != nil {
-		r.CreateHttpError(rw, http.StatusInternalServerError, "Error while encoding response")
+		r.SendErrorResponse(rw, http.StatusInternalServerError, "Error while encoding response")
 		return
 	}
 }

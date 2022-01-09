@@ -14,7 +14,7 @@ type ErrorResponse struct {
 	Payload    ErrorPayload `json:"payload"`
 }
 
-func (r *response) CreateHttpError(rw http.ResponseWriter, code int, message string) {
+func (r *response) SendErrorResponse(rw http.ResponseWriter, code int, message string) {
 	resp := ErrorResponse{
 		StatusCode: code,
 		Payload:    ErrorPayload{Message: message},

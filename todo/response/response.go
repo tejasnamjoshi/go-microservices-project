@@ -1,7 +1,7 @@
 package response
 
 import (
-	"go-todo/auth/logging"
+	"go-todo/todo/logging"
 	"net/http"
 )
 
