@@ -25,6 +25,5 @@ func (t Todos) CreateNewTodo(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rw.WriteHeader(http.StatusOK)
-	rw.Write([]byte("TODO added successfully"))
+	t.Response.CreateSuccessResponse(rw, "TODO added successfully")
 }

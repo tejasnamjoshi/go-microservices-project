@@ -5,6 +5,7 @@ import (
 	"go-todo/auth/infrastructure"
 	"go-todo/auth/logging"
 	"go-todo/auth/repository"
+	"go-todo/auth/response"
 	"go-todo/auth/service"
 	"go-todo/auth/store"
 
@@ -22,12 +23,13 @@ func main() {
 	db := store.GetDb(logger)
 	userRepository := repository.NewMysqlRepository(db, logger)
 	jwtService := service.NewJWTService(logger)
-
+	resp := response.NewResponse(logger)
 	c := controllers.NewAuthController(controllers.App{
 		Validator:   validator.New(),
 		Logger:      logger,
 		UserService: service.NewUserService(userRepository, logger, jwtService),
 		JwtService:  jwtService,
+		Response:    resp,
 	})
 
 	i := infrastructure.NewInfrastructure(logger, jwtService)

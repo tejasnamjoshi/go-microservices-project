@@ -6,7 +6,7 @@ import (
 
 func (t Todos) GetByUsername(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	userId := ctx.Value("userId").(int)
+	userId := ctx.Value(UserIdContext{}).(int)
 	todos, err := t.TodoService.GetByUsername(userId)
 
 	if err != nil {
@@ -15,7 +15,5 @@ func (t Todos) GetByUsername(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rw.Header().Add("Content-Type", "application/json")
-	rw.WriteHeader(http.StatusOK)
-	todos.ToJSON(rw)
+	t.Response.CreateSuccessResponse(rw, todos)
 }

@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"net/http"
 )
 
@@ -17,12 +16,7 @@ func (a Auth) GetUsers(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rw.Header().Add("Content-Type", "application/json")
-	rw.WriteHeader(http.StatusOK)
-	err = users.ToJSON(rw)
-	if err != nil {
-		a.Logger.Error(err.Error())
-	}
+	a.Response.CreateSuccessResponse(rw, users)
 }
 
 func (a Auth) DecodeToken(rw http.ResponseWriter, r *http.Request) {
@@ -39,11 +33,5 @@ func (a Auth) DecodeToken(rw http.ResponseWriter, r *http.Request) {
 		rw.Write([]byte("Unauthorized access"))
 		return
 	}
-	rw.Header().Add("Content-Type", "application/json")
-	rw.WriteHeader(http.StatusOK)
-	e := json.NewEncoder(rw)
-	err = e.Encode(claims)
-	if err != nil {
-		a.Logger.Error(err.Error())
-	}
+	a.Response.CreateSuccessResponse(rw, claims)
 }

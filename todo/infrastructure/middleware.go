@@ -59,7 +59,7 @@ func (m *Infrastructure) IsAuthorized(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(context.Background(), controllers.UserIdContext{}, userClaims.UserId)
+		ctx := context.WithValue(r.Context(), controllers.UserIdContext{}, userClaims.UserId)
 		next.ServeHTTP(rw, r.WithContext(ctx))
 	})
 }

@@ -1,9 +1,7 @@
 package controllers
 
 import (
-	"encoding/json"
 	"go-todo/auth/entities"
-	"go-todo/auth/response"
 	"net/http"
 )
 
@@ -21,23 +19,19 @@ func (a Auth) AddUser(rw http.ResponseWriter, r *http.Request) {
 	err := a.UserService.Validate(&user)
 	if err != nil {
 		a.Logger.Error(err.Error())
-		response.CreateHttpError(rw, http.StatusBadRequest, err.Error())
+		a.Response.CreateHttpError(rw, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	// Invoke Logic
 	err = a.UserService.Create(&user)
 	if err != nil {
-		response.CreateHttpError(rw, http.StatusInternalServerError, "Error creating user.")
+		a.Response.CreateHttpError(rw, http.StatusInternalServerError, "Error creating user.")
 		return
 	}
 
 	// Send Response
-	rw.WriteHeader(http.StatusOK)
-	_, err = rw.Write([]byte("New User created successfully"))
-	if err != nil {
-		a.Logger.Error(err.Error())
-	}
+	a.Response.CreateSuccessResponse(rw, "New User created successfully")
 }
 
 func (a Auth) Login(rw http.ResponseWriter, r *http.Request) {
@@ -48,22 +42,16 @@ func (a Auth) Login(rw http.ResponseWriter, r *http.Request) {
 	err := a.UserService.Validate(&user)
 	if err != nil {
 		a.Logger.Error(err.Error())
-		response.CreateHttpError(rw, http.StatusBadRequest, err.Error())
+		a.Response.CreateHttpError(rw, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	token, err := a.UserService.Login(&user)
 	if err != nil {
 		a.Logger.Error(err.Error())
-		response.CreateHttpError(rw, http.StatusUnauthorized, "Error logging in.")
+		a.Response.CreateHttpError(rw, http.StatusUnauthorized, "Error logging in.")
 		return
 	}
 
-	rw.Header().Add("Content-Type", "application/json")
-	rw.WriteHeader(http.StatusOK)
-	e := json.NewEncoder(rw)
-	err = e.Encode(LoginResp{Token: token})
-	if err != nil {
-		a.Logger.Error(err.Error())
-	}
+	a.Response.CreateSuccessResponse(rw, LoginResp{Token: token})
 }

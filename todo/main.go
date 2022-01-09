@@ -5,6 +5,7 @@ import (
 	"go-todo/todo/infrastructure"
 	"go-todo/todo/logging"
 	"go-todo/todo/repository"
+	"go-todo/todo/response"
 	"go-todo/todo/service"
 	"go-todo/todo/store"
 
@@ -21,10 +22,13 @@ func main() {
 	db := store.GetDb(logger)
 	todoRepository := repository.NewMysqlRepository(db, logger)
 	todoService := service.NewTodoService(todoRepository, logger)
+	resp := response.NewResponse(logger)
 	c := controllers.NewTodos(controllers.App{
 		TodoService: todoService,
 		Logger:      logger,
+		Response:    resp,
 	})
+
 	i := infrastructure.NewInfrastructure(logger, c)
 	i.InitRouter()
 }

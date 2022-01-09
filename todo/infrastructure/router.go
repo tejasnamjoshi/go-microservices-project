@@ -14,6 +14,7 @@ func (i Infrastructure) InitRouter() {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Logger)
+	r.Use(i.ResponseMiddleware)
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins: []string{"http://localhost*"},
 		AllowedMethods: []string{"GET", "POST", "PATCH"},
