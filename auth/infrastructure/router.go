@@ -12,12 +12,11 @@ import (
 	"github.com/go-chi/cors"
 )
 
-func InitRouter(c *controllers.Auth, logger logging.Logger) {
+func (i *Infrastructure) InitRouter(c *controllers.Auth, logger logging.Logger) {
 	httpRouter := chi.NewRouter()
-	appMiddleware := NewMiddleware(logger)
 
 	httpRouter.Use(middleware.Logger)
-	httpRouter.Use(appMiddleware.ResponseMiddleware)
+	httpRouter.Use(i.Response)
 	httpRouter.Use(cors.Handler(cors.Options{
 		AllowedOrigins: []string{"http://localhost*"},
 		AllowedMethods: []string{"GET", "POST", "PATCH"},
@@ -28,8 +27,8 @@ func InitRouter(c *controllers.Auth, logger logging.Logger) {
 	httpRouter.Get("/user/authorized", c.DecodeToken)
 	httpRouter.Get("/login", c.Login)
 
-	httpRouter.With(c.IsAuthorized).Get("/users", c.GetUsers)
-	httpRouter.With(c.IsAuthorized).Delete("/user/{username}", c.DeleteUser)
+	httpRouter.With(i.IsAuthorized).Get("/users", c.GetUsers)
+	httpRouter.With(i.IsAuthorized).Delete("/user/{username}", c.DeleteUser)
 
 	port := os.Getenv("AUTH_PORT")
 	err := http.ListenAndServe(fmt.Sprintf(":%s", port), httpRouter)

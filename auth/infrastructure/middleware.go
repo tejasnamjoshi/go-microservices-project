@@ -2,31 +2,21 @@ package infrastructure
 
 import (
 	"encoding/json"
-	"go-todo/auth/data"
-	"go-todo/auth/logging"
 	"go-todo/auth/service"
 	"net/http"
 	"time"
 )
 
-type AppMiddleware struct {
-	Logger logging.Logger
-}
-
-func NewMiddleware(logger logging.Logger) *AppMiddleware {
-	return &AppMiddleware{logger}
-}
-
-func (m *AppMiddleware) ResponseMiddleware(next http.Handler) http.Handler {
+func (m *Infrastructure) Response(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		next.ServeHTTP(w, r)
 	})
 }
 
-func (m *AppMiddleware) IsAuthorized(next http.Handler) http.Handler {
+func (m *Infrastructure) IsAuthorized(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		nc, err := data.GetNats(m.Logger)
+		nc, err := m.GetNats()
 		if err != nil {
 			m.Logger.Error(err.Error())
 			rw.WriteHeader(http.StatusInternalServerError)

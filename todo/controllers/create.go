@@ -8,7 +8,7 @@ import (
 func (t Todos) CreateNewTodo(rw http.ResponseWriter, r *http.Request) {
 	var todo = entities.Todo{}
 	ctx := r.Context()
-	userId := ctx.Value("userId").(int)
+	userId := ctx.Value(UserIdContext{}).(int)
 
 	defer r.Body.Close()
 	err := todo.FromJSON(r.Body)

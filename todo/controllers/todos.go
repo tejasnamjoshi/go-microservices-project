@@ -17,3 +17,5 @@ type Todos struct {
 func NewTodos(a App) *Todos {
 	return &Todos{a}
 }
+
+type UserIdContext struct{}

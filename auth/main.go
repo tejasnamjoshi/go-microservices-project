@@ -30,7 +30,8 @@ func main() {
 		JwtService:  jwtService,
 	})
 
+	i := infrastructure.NewInfrastructure(logger, jwtService)
+	i.InitNats()
 	logger.Info("Welcome to the AUTH App")
-	c.InitNats()
-	infrastructure.InitRouter(c, logger)
+	i.InitRouter(c, logger)
 }

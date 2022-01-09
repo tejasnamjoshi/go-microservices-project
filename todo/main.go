@@ -25,6 +25,6 @@ func main() {
 		TodoService: todoService,
 		Logger:      logger,
 	})
-
-	infrastructure.InitRouter(c, logger)
+	i := infrastructure.NewInfrastructure(logger, c)
+	i.InitRouter()
 }
