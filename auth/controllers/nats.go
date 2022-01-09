@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"go-todo/auth/data"
 	"strings"
 
@@ -23,6 +24,7 @@ func (a Auth) InitNats() {
 			return
 		}
 
+		fmt.Println("here")
 		claims, err := a.JwtService.GetAuthorizationData(jwtParts[1])
 		if err != nil {
 			a.Logger.Error("Error getting authorization status")

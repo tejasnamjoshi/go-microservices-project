@@ -14,7 +14,7 @@
 
 
 -- Dumping database structure for go-todo
-CREATE DATABASE IF NOT EXISTS `go-todo` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+CREATE DATABASE IF NOT EXISTS `go-todo` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `go-todo`;
 
 -- Dumping structure for table go-todo.todos
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS `todos` (
   `content` varchar(255) NOT NULL,
   `completed` tinyint NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table go-todo.todos: ~0 rows (approximately)
 /*!40000 ALTER TABLE `todos` DISABLE KEYS */;
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `password` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table go-todo.users: ~0 rows (approximately)
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS `users_todos` (
   KEY `FK2_todo_id` (`todo_id`),
   CONSTRAINT `FK1_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `FK2_todo_id` FOREIGN KEY (`todo_id`) REFERENCES `todos` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table go-todo.users_todos: ~0 rows (approximately)
 /*!40000 ALTER TABLE `users_todos` DISABLE KEYS */;

@@ -27,6 +27,7 @@ func main() {
 		Validator:   validator.New(),
 		Logger:      logger,
 		UserService: service.NewUserService(userRepository, logger, jwtService),
+		JwtService:  jwtService,
 	})
 
 	logger.Info("Welcome to the AUTH App")

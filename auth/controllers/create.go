@@ -3,7 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"go-todo/auth/entities"
-	"go-todo/auth/utils"
+	"go-todo/auth/response"
 	"net/http"
 )
 
@@ -21,14 +21,14 @@ func (a Auth) AddUser(rw http.ResponseWriter, r *http.Request) {
 	err := a.UserService.Validate(&user)
 	if err != nil {
 		a.Logger.Error(err.Error())
-		utils.CreateHttpError(rw, http.StatusBadRequest, err.Error())
+		response.CreateHttpError(rw, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	// Invoke Logic
 	err = a.UserService.Create(&user)
 	if err != nil {
-		utils.CreateHttpError(rw, http.StatusInternalServerError, "Error creating user.")
+		response.CreateHttpError(rw, http.StatusInternalServerError, "Error creating user.")
 		return
 	}
 
@@ -48,14 +48,14 @@ func (a Auth) Login(rw http.ResponseWriter, r *http.Request) {
 	err := a.UserService.Validate(&user)
 	if err != nil {
 		a.Logger.Error(err.Error())
-		utils.CreateHttpError(rw, http.StatusBadRequest, err.Error())
+		response.CreateHttpError(rw, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	token, err := a.UserService.Login(&user)
 	if err != nil {
 		a.Logger.Error(err.Error())
-		utils.CreateHttpError(rw, http.StatusUnauthorized, "Error logging in.")
+		response.CreateHttpError(rw, http.StatusUnauthorized, "Error logging in.")
 		return
 	}
 

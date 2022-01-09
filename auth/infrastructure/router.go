@@ -14,7 +14,10 @@ import (
 
 func InitRouter(c *controllers.Auth, logger logging.Logger) {
 	httpRouter := chi.NewRouter()
+	appMiddleware := NewMiddleware(logger)
+
 	httpRouter.Use(middleware.Logger)
+	httpRouter.Use(appMiddleware.ResponseMiddleware)
 	httpRouter.Use(cors.Handler(cors.Options{
 		AllowedOrigins: []string{"http://localhost*"},
 		AllowedMethods: []string{"GET", "POST", "PATCH"},
