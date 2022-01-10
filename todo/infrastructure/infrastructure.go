@@ -10,6 +10,7 @@ type Infrastructure struct {
 	Controller *controllers.Todos
 }
 
+// Constructor function for the infrastructure package
 func NewInfrastructure(logger logging.Logger, controller *controllers.Todos) *Infrastructure {
 	return &Infrastructure{Logger: logger, Controller: controller}
 }

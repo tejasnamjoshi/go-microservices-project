@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// A middleware that sets the content type on every request
 func (m *Infrastructure) Response(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
@@ -14,6 +15,7 @@ func (m *Infrastructure) Response(next http.Handler) http.Handler {
 	})
 }
 
+// Authorization middleware that returns whether a user has a valid JWT or not
 func (m *Infrastructure) IsAuthorized(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		nc, err := m.GetNats()

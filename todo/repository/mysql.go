@@ -13,9 +13,12 @@ type mysql struct {
 	logger logging.Logger
 }
 
+// Constructor function for the mysql repository.
 func NewMysqlRepository(d *sqlx.DB, logger logging.Logger) TodoRepository {
 	return &mysql{d, logger}
 }
+
+// Inserts a todo into the db and returns error / nil
 func (m *mysql) Create(todo *entities.Todo, userId int) error {
 	createNewTodoSchema := `INSERT INTO todos (content) values (:content)`
 	createNewUserTodoSchema := `INSERT INTO users_todos (user_id, todo_id) values (?, ?)`
@@ -40,6 +43,7 @@ func (m *mysql) Create(todo *entities.Todo, userId int) error {
 	return err
 }
 
+// Fetches and returns todos for the provided user.
 func (m *mysql) GetByUsername(userId int) (entities.Todos, error) {
 	getTodoIdsByUserIdSchema := `SELECT todo_id from users_todos where user_id=?`
 	getTodoByIds := "SELECT * from todos where id IN (?)"
@@ -70,6 +74,7 @@ func (m *mysql) GetByUsername(userId int) (entities.Todos, error) {
 	return todos, nil
 }
 
+// Updates the todo with complete set to 1
 func (m *mysql) MarkAsComplete(todoId string) error {
 	markAsCompleteSchema := "UPDATE todos SET completed = 1 where id = ?"
 

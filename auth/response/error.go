@@ -14,6 +14,7 @@ type ErrorResponse struct {
 	Payload    ErrorPayload `json:"payload"`
 }
 
+// Encodes the error and writes it to the response-writer.
 func (r *response) SendErrorResponse(rw http.ResponseWriter, code int, message string) {
 	resp := ErrorResponse{
 		StatusCode: code,

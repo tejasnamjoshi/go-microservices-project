@@ -10,6 +10,8 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
+// Creates a NATS connection.
+// Max number of retries is 5 and it waits for 1 second before every retry.
 func (n *Infrastructure) GetNats() (*nats.Conn, error) {
 	var nc *nats.Conn
 	uri := os.Getenv("NATS_URI")
@@ -34,6 +36,7 @@ func (n *Infrastructure) GetNats() (*nats.Conn, error) {
 	return nc, nil
 }
 
+// Gets the NATS connection and initializes the listener
 func (n *Infrastructure) InitNats() {
 	nc, err := n.GetNats()
 	if err != nil {

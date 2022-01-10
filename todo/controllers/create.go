@@ -6,6 +6,7 @@ import (
 )
 
 func (t Todos) CreateNewTodo(rw http.ResponseWriter, r *http.Request) {
+	// Extract and Format the request data
 	var todo = entities.Todo{}
 	ctx := r.Context()
 	userId := ctx.Value(UserIdContext{}).(int)
@@ -18,6 +19,7 @@ func (t Todos) CreateNewTodo(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Invoke logic
 	err = t.TodoService.Create(&todo, userId)
 	if err != nil {
 		t.Logger.Error(err.Error())
@@ -25,5 +27,6 @@ func (t Todos) CreateNewTodo(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Send Response
 	t.Response.SendSuccessResponse(rw, "TODO added successfully")
 }

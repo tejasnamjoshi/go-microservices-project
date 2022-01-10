@@ -10,6 +10,7 @@ type Infrastructure struct {
 	JwtService service.JWTService
 }
 
+// Constructor function for the infrastructure package
 func NewInfrastructure(logger logging.Logger, jwtService service.JWTService) *Infrastructure {
 	return &Infrastructure{Logger: logger, JwtService: jwtService}
 }

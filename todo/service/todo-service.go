@@ -17,6 +17,7 @@ type todoservice struct {
 	logger         logging.Logger
 }
 
+// Constructor function for Todo Service
 func NewTodoService(todoRepository repository.TodoRepository, logger logging.Logger) TodoService {
 	return &todoservice{todoRepository, logger}
 }

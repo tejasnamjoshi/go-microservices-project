@@ -13,6 +13,7 @@ import (
 func (i Infrastructure) InitRouter() {
 	r := chi.NewRouter()
 
+	// Initialize the Middleware
 	r.Use(middleware.Logger)
 	r.Use(i.ResponseMiddleware)
 	r.Use(cors.Handler(cors.Options{
@@ -20,10 +21,13 @@ func (i Infrastructure) InitRouter() {
 		AllowedMethods: []string{"GET", "POST", "PATCH"},
 		AllowedHeaders: []string{"Accept", "Authorization", "Content-Type"},
 	}))
+
+	// Initialize the routes
 	r.With(i.IsAuthorized).Get("/todos", i.Controller.GetByUsername)
 	r.With(i.IsAuthorized).Post("/todos", i.Controller.CreateNewTodo)
 	r.With(i.IsAuthorized).Patch("/todos/{todoId}", i.Controller.MarkAsComplete)
 
+	// Start the listener
 	i.Logger.Info("Welcome to the TODOS App")
 	port := os.Getenv("TODO_PORT")
 	err := http.ListenAndServe(fmt.Sprintf(":%s", port), r)

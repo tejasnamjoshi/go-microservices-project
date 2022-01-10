@@ -34,6 +34,8 @@ func NewJWTService(logger logging.Logger) JWTService {
 	return &JWTServiceStruct{logger}
 }
 
+// Generates a password using the brypt hashing function and adds it to the user entity
+// Returns an error or nil
 func (js *JWTServiceStruct) GeneratePassword(user *entities.User) error {
 	pwd, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.MinCost)
 	if err != nil {
@@ -45,11 +47,14 @@ func (js *JWTServiceStruct) GeneratePassword(user *entities.User) error {
 	return nil
 }
 
+// Returns true if hash and plain-text password match, else returns false
 func (*JWTServiceStruct) ComparePassword(user *entities.User, dbUser *entities.User) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(user.Password))
 	return err == nil
 }
 
+// Generates a JWT using custom claims as defined in the .env file.
+// Returns token and error / nil
 func (js *JWTServiceStruct) GetJWT(user *entities.User) (string, error) {
 	var mySigningKey = []byte(os.Getenv("SECRET_KEY"))
 	st, _ := strconv.Atoi(os.Getenv("SESSION_TIME"))
@@ -75,6 +80,7 @@ func (js *JWTServiceStruct) GetJWT(user *entities.User) (string, error) {
 	return tokenString, nil
 }
 
+// Parses the provider JWT and returns claims and error / nil
 func ParseJWT(tokenString string, logger logging.Logger) (*CustomClaims, error) {
 	var mySigningKey = []byte(os.Getenv("SECRET_KEY"))
 
@@ -115,6 +121,7 @@ func ParseJWT(tokenString string, logger logging.Logger) (*CustomClaims, error) 
 	return claims, nil
 }
 
+// Returns the response received from ParseJWT function above
 func (js *JWTServiceStruct) GetAuthorizationData(userToken string) (*CustomClaims, error) {
 	if userToken == "" {
 		err := errors.New("no Authorization Token provided")

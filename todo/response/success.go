@@ -10,6 +10,8 @@ type SuccessResponse struct {
 	Payload    interface{} `json:"payload"`
 }
 
+// Encodes the data onto the response-writer.
+// Invokes the errorhandler if the response cannot be encoded.
 func (r *response) SendSuccessResponse(rw http.ResponseWriter, data interface{}) {
 	resp := SuccessResponse{
 		StatusCode: http.StatusOK,

@@ -14,6 +14,7 @@ type UserClaims struct {
 	Authorized bool   `json:"authorized"`
 }
 
+// A middleware that sets the content type on every request
 func (m *Infrastructure) ResponseMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
@@ -21,6 +22,7 @@ func (m *Infrastructure) ResponseMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// Authorization middleware that checks whether a user has a valid JWT or not by making a call via NATS to the auth service.
 func (m *Infrastructure) IsAuthorized(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")

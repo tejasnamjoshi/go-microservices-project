@@ -14,10 +14,12 @@ type mysql struct {
 	logger logging.Logger
 }
 
+// Constructor function for the mysql repository.
 func NewMysqlRepository(d *sqlx.DB, logger logging.Logger) UserRepository {
 	return &mysql{d, logger}
 }
 
+// Inserts a user into the db and returns its id and error / nil
 func (r *mysql) Create(user *entities.User) (int, error) {
 	var addUserSchema = `INSERT INTO users (username, password) VALUES (:username, :password)`
 	res, err := r.db.NamedExec(addUserSchema, user)
@@ -34,6 +36,7 @@ func (r *mysql) Create(user *entities.User) (int, error) {
 	return int(id), nil
 }
 
+// Removes a user from the table and returns an error / nil
 func (r *mysql) Delete(username string) error {
 	var deleteUserSchema = `DELETE FROM users where username=?`
 	res, err := r.db.Exec(deleteUserSchema, username)
@@ -56,6 +59,7 @@ func (r *mysql) Delete(username string) error {
 	return nil
 }
 
+// Fetches a user record with the provided username and returns it
 func (r *mysql) Authenticate(user *entities.User) (*entities.User, error) {
 	var authUserSchema = `SELECT * FROM users WHERE username=?`
 	row := r.db.QueryRow(authUserSchema, user.Username)
@@ -76,6 +80,7 @@ func (r *mysql) Authenticate(user *entities.User) (*entities.User, error) {
 	return &dbUser, nil
 }
 
+// Returns records of all users
 func (r *mysql) GetAll() (*entities.Users, error) {
 	var selectAllSchema = `SELECT * FROM users`
 	users := entities.Users{}

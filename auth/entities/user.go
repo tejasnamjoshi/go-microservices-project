@@ -3,7 +3,6 @@ package entities
 import (
 	"encoding/json"
 	"io"
-	"net/http"
 )
 
 type User struct {
@@ -14,11 +13,7 @@ type User struct {
 
 type Users []User
 
-func (users Users) ToJSON(rw http.ResponseWriter) error {
-	e := json.NewEncoder(rw)
-	return e.Encode(users)
-}
-
+// Decodes from io reader to the user object.
 func (user *User) FromJSON(r io.Reader) error {
 	e := json.NewDecoder(r)
 	return e.Decode(user)

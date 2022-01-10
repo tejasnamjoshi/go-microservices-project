@@ -13,12 +13,14 @@ import (
 )
 
 func main() {
+	// Creates logger
 	logger := logging.NewZapLogger()
 	err := godotenv.Load(".env")
 	if err != nil {
 		logger.Error("Error loading .env file")
 	}
 
+	// Creates DB and initializes controllers
 	db := store.GetDb(logger)
 	todoRepository := repository.NewMysqlRepository(db, logger)
 	todoService := service.NewTodoService(todoRepository, logger)
@@ -29,6 +31,7 @@ func main() {
 		Response:    resp,
 	})
 
+	// Sets up routing, middleware, NATS
 	i := infrastructure.NewInfrastructure(logger, c)
 	i.InitRouter()
 }

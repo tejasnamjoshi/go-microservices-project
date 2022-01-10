@@ -16,6 +16,7 @@ type Todos struct {
 	App
 }
 
+// Constructor function for the controllers package.
 func NewTodos(a App) *Todos {
 	return &Todos{a}
 }
